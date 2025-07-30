@@ -23,6 +23,12 @@ namespace BlinkSwitch
         [Header("Pencil effect params")]
         public Texture SketchTexture;
         public float LineStrength;
-        public float SketchSize;
+        [Range(0.0f, 1.0f)]
+        public float LineColorStrength;
+        public float Sketch1LineSize;
+        public float Sketch2LineSize;
+        public float Sketch1Threshold;
+        public float SketchSkyStrength;
+        public float SketchSkyTextureSize;
     }
 }

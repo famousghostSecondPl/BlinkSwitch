@@ -46,11 +46,16 @@ Shader "BlinkSwitch/PencilPostProcessShader"
             sampler2D _DogWithoutFilterTexture;
             sampler2D _SourceTexture;
             float _LineStrength;
+            float _LineColorStrength;
             sampler2D _CameraDepthTexture;
 
             float4x4 _MainLightDirectionMatrix;
 
-            float _SketchLineSize;
+            float _Sketch1LineSize;
+            float _Sketch2LineSize;
+            float _Sketch1Threshold;
+            float _SketchSkyStrength;
+            float _SketchSkyTextureSize;
 
             float4 frag (v2f i) : SV_Target
             {
@@ -64,12 +69,21 @@ Shader "BlinkSwitch/PencilPostProcessShader"
 
                 float3 worldPos = rayOrigin + rayDirection * cameraDepth;
 
-                float2 lightUv = mul(float4(worldPos, 1.0f), _MainLightDirectionMatrix).xy * _SketchLineSize;
+                float2 lightUv = mul(float4(worldPos, 1.0f), _MainLightDirectionMatrix).xy;
 
                 float pencilValue = tex2D(_MainTex, i.uv).r * _LineStrength;
                 float dogValue = tex2D(_DogWithoutFilterTexture, i.uv).r;
-                float4 sketchResult = saturate(tex2D(_SketchTexture, lightUv) * tex2D(_SketchTexture, lightUv + float2(0.4f, -0.5f)));
-                float4 result = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), saturate(sketchResult), min(1.0f, pencilValue + (1.0f - dogValue)));
+                float4 sketch1 = tex2D(_SketchTexture, lightUv * _Sketch1LineSize);
+                float4 sketch2 = tex2D(_SketchTexture, (lightUv + float2(0.8f, 0.2f)) * _Sketch2LineSize);
+                float4 sketchScreenSpace = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), tex2D(_SketchTexture, i.uv * _SketchSkyTextureSize) * _SketchSkyStrength, step(0.001f, _SketchSkyStrength));
+                float lerpValue = 1.0f - dogValue;
+
+                float4 sketchColorResult = lerp(sketch1, sketch2, 1.0f - smoothstep(0.0f, _Sketch1Threshold, lerpValue));
+
+                float4 result = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), sketchColorResult, lerpValue);
+                result = lerp(result, sketchScreenSpace, step(_ProjectionParams.z - 1.0f, cameraDepth));
+                float lineColorStrength = 1.0f - _LineColorStrength;
+                result = lerp(float4(lineColorStrength, lineColorStrength, lineColorStrength, 1.0f), result, 1.0f - pencilValue);
                 return result;
             }
             ENDCG

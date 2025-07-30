@@ -23,4 +23,8 @@ MonoBehaviour:
   SobelFilterSize: 4
   SketchTexture: {fileID: 2800000, guid: 68ebbfec02bb15b4b8b46d89cfef7ed4, type: 3}
   LineStrength: 0.5
-  SketchSize: 0.4
+  Sketch1LineSize: 0.6
+  Sketch2LineSize: 0.6
+  Sketch1Threshold: 0.5
+  SketchSkyStrength: 2
+  SketchSkyTextureSize: 8

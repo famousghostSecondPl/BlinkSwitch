@@ -56,10 +56,15 @@ namespace BlinkSwitch
 
             _SobelFilterMaterial.SetFloat(_SobelFilterSizeId, _Settings.SobelFilterSize);
 
-            _PencilEffectMaterial.SetFloat(_SketchLineSizeId, _Settings.SketchSize);
+            _PencilEffectMaterial.SetFloat(_Sketch1LineSizeId, _Settings.Sketch1LineSize);
+            _PencilEffectMaterial.SetFloat(_Sketch2LineSizeId, _Settings.Sketch2LineSize);
+            _PencilEffectMaterial.SetFloat(_Sketch1ThresholdId, _Settings.Sketch1Threshold);
+            _PencilEffectMaterial.SetFloat(_SketchSkyStrengthId, _Settings.SketchSkyStrength);
+            _PencilEffectMaterial.SetFloat(_SketchSkyTextureSizeId, _Settings.SketchSkyTextureSize);
             _PencilEffectMaterial.SetTexture(_SketchTextureId, _Settings.SketchTexture);
             _PencilEffectMaterial.SetTexture(_DogWithoutSobelFilterTextureId, _DifferenceOfGaussiansTexture);
             _PencilEffectMaterial.SetFloat(_LineStrengthId, _Settings.LineStrength);
+            _PencilEffectMaterial.SetFloat(_LineColorStrengthId, _Settings.LineColorStrength);
         }
 
         public void Refresh()
@@ -102,7 +107,14 @@ namespace BlinkSwitch
         private readonly int _LineStrengthId = Shader.PropertyToID("_LineStrength");
         private readonly int _MainLightDirectionMatrixId = Shader.PropertyToID("_MainLightDirectionMatrix");
         private readonly int _SourceTextureId = Shader.PropertyToID("_SourceTexture");
-        private readonly int _SketchLineSizeId = Shader.PropertyToID("_SketchLineSize");
+
+        //Sketch Texture Params
+        private readonly int _LineColorStrengthId = Shader.PropertyToID("_LineColorStrength");
+        private readonly int _Sketch1LineSizeId = Shader.PropertyToID("_Sketch1LineSize");
+        private readonly int _Sketch2LineSizeId = Shader.PropertyToID("_Sketch2LineSize");
+        private readonly int _Sketch1ThresholdId = Shader.PropertyToID("_Sketch1Threshold");
+        private readonly int _SketchSkyStrengthId = Shader.PropertyToID("_SketchSkyStrength");
+        private readonly int _SketchSkyTextureSizeId = Shader.PropertyToID("_SketchSkyTextureSize");
         #endregion Private Variables
 
         #region Private Methods

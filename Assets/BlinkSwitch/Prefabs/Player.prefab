@@ -105,6 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a8c57bd43ccb05488f4d5ee4eceb9c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _PlayerInput: {fileID: 5261858531265633339}
   _DirectionalLight: {fileID: 0}
   _ComicBookSettings: {fileID: 11400000, guid: 044a4182a12ea3a45aad2243c7bf7632, type: 2}
   _SketchDrawingSettings: {fileID: 11400000, guid: 0bdaefd2d0a59aa48b39807a763ccea8, type: 2}

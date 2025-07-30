@@ -2,12 +2,14 @@ namespace BlinkSwitch
 {
     using System.Collections;
     using UnityEngine;
-    using UnityEngine.Experimental.GlobalIllumination;
     using UnityEngine.InputSystem;
 
     public sealed class PostProcess : MonoBehaviour
     {
         #region Inspector Variables
+        [Header("Player Input")]
+        [SerializeField] private PlayerInput _PlayerInput;
+
         [Header("Post Process Effects Settings")]
         [SerializeField] private Transform _DirectionalLight;
         [SerializeField] private ComicBookSettings _ComicBookSettings;
@@ -45,7 +47,7 @@ namespace BlinkSwitch
 
         private void Update()
         {
-            if (Keyboard.current.fKey.wasPressedThisFrame && !_Blinking)
+            if (_PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
             {
                 StartCoroutine(Blink());
             }
