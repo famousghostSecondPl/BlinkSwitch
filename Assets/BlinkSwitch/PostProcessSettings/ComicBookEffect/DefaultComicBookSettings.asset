@@ -18,4 +18,4 @@ MonoBehaviour:
   OutlineSize: 1.2
   PixelSize: 4
   BitsPerColor: 8
-  DitheirngThreshold: 1
+  DitheirngThreshold: 0.7
