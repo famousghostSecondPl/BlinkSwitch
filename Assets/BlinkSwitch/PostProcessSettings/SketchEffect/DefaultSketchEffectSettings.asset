@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: deec172949b83d740b8b89f95557d841, type: 3}
+  m_Name: DefaultSketchEffectSettings
+  m_EditorClassIdentifier: 
+  GaussianTextureSize: 1024
+  GaussianBlurStep: 4
+  GaussianBlurStrength: 1
+  Sigma: 12
+  Threshold: 0.4
+  UParam: 2
+  GaussianBlurSigma1: 2
+  GaussianBlurSigma2: 4
+  SobelFilterSize: 4
+  SketchTexture: {fileID: 2800000, guid: 68ebbfec02bb15b4b8b46d89cfef7ed4, type: 3}
+  LineStrength: 0.5
+  SketchSize: 0.4

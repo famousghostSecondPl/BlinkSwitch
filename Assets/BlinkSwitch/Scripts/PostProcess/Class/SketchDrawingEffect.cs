@@ -1,0 +1,130 @@
+namespace BlinkSwitch
+{
+    using System.Runtime.CompilerServices;
+    using UnityEngine;
+    using UnityEngine.Experimental.GlobalIllumination;
+
+    public sealed class SketchDrawingEffect : IPostProcessEffect
+    {
+        #region Public Methods
+        public SketchDrawingEffect(SketchEffectSettings settings, in Camera camera, Transform directionalLight)
+        {
+            _Settings = settings;
+            _Camera = camera;
+            _DirectionalLight = directionalLight;
+            _SobelFilterMaterial = new Material(Shader.Find("BlinkSwitch/SobelFilterShader"));
+            _DifferenceOfGaussianMaterial = new Material(Shader.Find("BlinkSwitch/DifferenceOfGaussiansPostProcessShader"));
+            _GaussianBlurMaterial = new Material(Shader.Find("BlinkSwitch/GaussianBlurPostProcessEffect"));
+            _PencilEffectMaterial = new Material(Shader.Find("BlinkSwitch/PencilPostProcessShader"));
+            InitTextures();
+        }
+
+        public RenderTexture GeneratePostProcess(RenderTexture source)
+        {
+            if(_GaussianBlurTexture1 == null || 
+               _GaussianBlurTexture2 == null ||
+               _DifferenceOfGaussiansTexture == null ||
+               _DogSobelFilterTexture == null ||
+               _ResultTexture == null)
+            {
+                return source;
+            }
+
+            _GaussianBlurMaterial.SetFloat(_GaussianBlurSigmaId, _Settings.GaussianBlurSigma1);
+            Graphics.Blit(source, _GaussianBlurTexture1, _GaussianBlurMaterial);
+            _GaussianBlurMaterial.SetFloat(_GaussianBlurSigmaId, _Settings.GaussianBlurSigma2);
+            Graphics.Blit(source, _GaussianBlurTexture2, _GaussianBlurMaterial);
+
+            Graphics.Blit(null, _DifferenceOfGaussiansTexture, _DifferenceOfGaussianMaterial);
+            Graphics.Blit(_DifferenceOfGaussiansTexture, _DogSobelFilterTexture, _SobelFilterMaterial);
+            _PencilEffectMaterial.SetMatrix(_MainLightDirectionMatrixId, _DirectionalLight.localToWorldMatrix);
+            _PencilEffectMaterial.SetTexture(_SourceTextureId, source);
+            Graphics.Blit(_DogSobelFilterTexture, _ResultTexture, _PencilEffectMaterial);
+
+            return _ResultTexture;
+        }
+        public void Setup()
+        {
+            _GaussianBlurMaterial.SetInt(_GaussianBlurStepsId, _Settings.GaussianBlurStep);
+            _GaussianBlurMaterial.SetFloat(_GaussianBlurStrengthId, _Settings.GaussianBlurStrength);
+
+            _DifferenceOfGaussianMaterial.SetTexture(_GaussianBlurTexture1Id, _GaussianBlurTexture1);
+            _DifferenceOfGaussianMaterial.SetTexture(_GaussianBlurTexture2Id, _GaussianBlurTexture2);
+            _DifferenceOfGaussianMaterial.SetFloat(_SigmaId, _Settings.Sigma);
+            _DifferenceOfGaussianMaterial.SetFloat(_ThresholdId, _Settings.Threshold);
+            _DifferenceOfGaussianMaterial.SetFloat(_UValueId, _Settings.UParam);
+
+            _SobelFilterMaterial.SetFloat(_SobelFilterSizeId, _Settings.SobelFilterSize);
+
+            _PencilEffectMaterial.SetFloat(_SketchLineSizeId, _Settings.SketchSize);
+            _PencilEffectMaterial.SetTexture(_SketchTextureId, _Settings.SketchTexture);
+            _PencilEffectMaterial.SetTexture(_DogWithoutSobelFilterTextureId, _DifferenceOfGaussiansTexture);
+            _PencilEffectMaterial.SetFloat(_LineStrengthId, _Settings.LineStrength);
+        }
+
+        public void Refresh()
+        {
+            InitTextures();
+        }
+        #endregion Public Methods
+
+        #region Private Variables
+        private SketchEffectSettings _Settings;
+
+        private Camera _Camera;
+        private Transform _DirectionalLight;
+
+        //Materials
+        private Material _SobelFilterMaterial;
+        private Material _DifferenceOfGaussianMaterial;
+        private Material _GaussianBlurMaterial;
+        private Material _PencilEffectMaterial;
+
+        //Textures
+        private RenderTexture _GaussianBlurTexture1;
+        private RenderTexture _GaussianBlurTexture2;
+        private RenderTexture _DifferenceOfGaussiansTexture;
+        private RenderTexture _DogSobelFilterTexture;
+        private RenderTexture _ResultTexture;
+
+        private readonly int _GaussianBlurTexture1Id = Shader.PropertyToID("_GaussianBlurTexture1");
+        private readonly int _GaussianBlurTexture2Id = Shader.PropertyToID("_GaussianBlurTexture2");
+        private readonly int _SketchTextureId = Shader.PropertyToID("_SketchTexture");
+        private readonly int _DogWithoutSobelFilterTextureId = Shader.PropertyToID("_DogWithoutFilterTexture");
+
+        private readonly int _SigmaId = Shader.PropertyToID("_Sigma");
+        private readonly int _ThresholdId = Shader.PropertyToID("_Threshold");
+        private readonly int _UValueId = Shader.PropertyToID("_U");
+        private readonly int _GaussianBlurSigmaId = Shader.PropertyToID("_GaussianBlurSigma");
+        private readonly int _GaussianBlurStrengthId = Shader.PropertyToID("_GaussianBlurStrength");
+        private readonly int _GaussianBlurStepsId = Shader.PropertyToID("_GaussianBlurSteps");
+        private readonly int _SobelFilterSizeId = Shader.PropertyToID("_SobelFilterSize");
+        private readonly int _LineStrengthId = Shader.PropertyToID("_LineStrength");
+        private readonly int _MainLightDirectionMatrixId = Shader.PropertyToID("_MainLightDirectionMatrix");
+        private readonly int _SourceTextureId = Shader.PropertyToID("_SourceTexture");
+        private readonly int _SketchLineSizeId = Shader.PropertyToID("_SketchLineSize");
+        #endregion Private Variables
+
+        #region Private Methods
+        private void InitTextures()
+        {
+            TextureUtilities.ReleaseTexture(_GaussianBlurTexture1);
+            TextureUtilities.ReleaseTexture(_GaussianBlurTexture2);
+            TextureUtilities.ReleaseTexture(_DifferenceOfGaussiansTexture);
+            TextureUtilities.ReleaseTexture(_DogSobelFilterTexture);
+            TextureUtilities.ReleaseTexture(_ResultTexture);
+
+            _GaussianBlurTexture1 =
+                TextureUtilities.CreateTextureBilinearClamp(_Settings.GaussianTextureSize, _Settings.GaussianTextureSize, _Camera.depth);
+            _GaussianBlurTexture2 = 
+                TextureUtilities.CreateTextureBilinearClamp(_Settings.GaussianTextureSize, _Settings.GaussianTextureSize, _Camera.depth);
+            _DifferenceOfGaussiansTexture = 
+                TextureUtilities.CreateTextureBilinearClamp(_Settings.GaussianTextureSize, _Settings.GaussianTextureSize, _Camera.depth);
+            _DogSobelFilterTexture = 
+                TextureUtilities.CreateTextureBilinearClamp(_Settings.GaussianTextureSize, _Settings.GaussianTextureSize, _Camera.depth);
+
+            _ResultTexture = TextureUtilities.CreateTextureBilinearClamp(_Camera.pixelWidth, _Camera.pixelHeight, _Camera.depth);
+        }
+        #endregion Private Methods
+    }
+}
