@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OutlineTextureSize: 1024
   OutlineDepthThreshold: 10
-  OutlineNormalThreshold: 0.99
-  OutlineSize: 1.2
+  OutlineNormalThreshold: 0.9
+  OutlineSize: 2
   PixelSize: 4
   BitsPerColor: 8
-  DitheirngThreshold: 0.7
+  DitheirngThreshold: 0.2
