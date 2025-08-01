@@ -70,6 +70,11 @@ namespace BlinkSwitch
                 }
                 playerIndex++;
             }
+            if(PlayersAmount != _PlayerInputs.Count)
+            {
+                Debug.LogError("Cannot spawn more players, because unity cannot find free gamepad or keyboard to assign to player");
+            }
+            PlayersAmount = _PlayerInputs.Count;
             for (playerIndex = 0; playerIndex < PlayersAmount; ++playerIndex)
             {
                 var playerInput = _PlayerInputs[playerIndex];
