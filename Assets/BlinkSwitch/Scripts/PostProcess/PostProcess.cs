@@ -38,9 +38,10 @@ namespace BlinkSwitch
 
         private void Start()
         {
-            PlayerCamera = GetComponent<Camera>();
             PlayerInput = GetComponent<PlayerInput>();
-            if(_DirectionalLight == null)
+            PlayerCamera = PlayerInput.camera;
+
+            if (_DirectionalLight == null)
             {
                 _DirectionalLight = GameObject.FindWithTag("DirectionalLight").transform;
             }
