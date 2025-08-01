@@ -1,5 +1,6 @@
 namespace BlinkSwitch
 {
+    using System.Collections.Generic;
     using Unity.VisualScripting;
     using UnityEngine;
     using UnityEngine.InputSystem;
@@ -12,10 +13,12 @@ namespace BlinkSwitch
         #endregion Public Variables
 
         #region Unity Methods
+        //TODO: Refactor this code, because it looks really ugly
         private void Start()
         {
             _PlayerInputManager = GetComponent<PlayerInputManager>();
-            if(PlayersAmount > 1)
+            _PlayerInputs = new List<PlayerInput>();
+            if (PlayersAmount > 1)
             {
                 _PlayerInputManager.splitScreen = true;
             }
@@ -41,23 +44,7 @@ namespace BlinkSwitch
                 }
                 if (playerInput != null)
                 {
-                    if (PlayersAmount == 1)
-                    {
-                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
-                    }
-                    else if (PlayersAmount == 2)
-                    {
-                        if (playerIndex == 0)
-                        {
-                            Debug.Log("Daje pierwszemu playerowi recta");
-                            playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 1.0f);
-                        }
-                        if (playerIndex == 1)
-                        {
-                            Debug.Log("Daje drugiemu playerowi recta");
-                            playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 1.0f);
-                        }
-                    }
+                    _PlayerInputs.Add(playerInput);
                     playerIndex++;
                     continue;
                 }
@@ -77,22 +64,64 @@ namespace BlinkSwitch
                     else
                         Debug.LogError("JoinPlayer failed for gamepad");
                 }
+                if (playerInput != null)
+                {
+                    _PlayerInputs.Add(playerInput);
+                }
+                playerIndex++;
+            }
+            for (playerIndex = 0; playerIndex < PlayersAmount; ++playerIndex)
+            {
+                var playerInput = _PlayerInputs[playerIndex];
                 if (PlayersAmount == 1)
                 {
                     playerInput.camera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
                 }
                 else if (PlayersAmount == 2)
                 {
-                    if(playerIndex == 0)
+                    if (playerIndex == 0)
                     {
                         playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 1.0f);
                     }
-                    if(playerIndex == 1)
+                    else if (playerIndex == 1)
                     {
                         playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 1.0f);
                     }
                 }
-                playerIndex++;
+                else if (PlayersAmount == 3)
+                {
+                    if (playerIndex == 0)
+                    {
+                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
+                    }
+                    else if (playerIndex == 1)
+                    {
+                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 0.5f);
+                    }
+                    else if(playerIndex == 2)
+                    {
+                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 1.0f, 0.5f);
+                    }
+                }
+                else if (PlayersAmount == 3)
+                {
+                    if (playerIndex == 0)
+                    {
+                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
+                    }
+                    else if (playerIndex == 1)
+                    {
+                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 0.5f);
+                    }
+                    else if (playerIndex == 2)
+                    {
+                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 0.5f, 0.5f);
+                    }
+                    else if (playerIndex == 3)
+                    {
+                        playerInput.camera.rect = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
+                    }
+                }
             }
         }
         #endregion Unity Methods
@@ -103,6 +132,7 @@ namespace BlinkSwitch
 
         #region Private Variables
         private PlayerInputManager _PlayerInputManager;
+        private List<PlayerInput> _PlayerInputs;
         #endregion Private Variables
     }
 }
