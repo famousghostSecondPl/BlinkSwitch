@@ -1,5 +1,8 @@
 namespace BlinkSwitch
 {
+    using NUnit.Framework;
+    using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
     using UnityEngine.InputSystem;
 
@@ -76,6 +79,10 @@ namespace BlinkSwitch
         #region Unity Methods
         private void Start()
         {
+            _PlayerStartPoints = FindObjectsByType<PlayerSpawn>(FindObjectsSortMode.None).ToList();
+            int randomIndex = Random.Range(0, _PlayerStartPoints.Count - 1);
+            transform.position = _PlayerStartPoints[randomIndex].StartPostion;
+            transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
             PlayerState = new PlayerIdle();
             Body = GetComponent<Rigidbody>();
             PlayerInput = GetComponent<PlayerInput>();
@@ -98,6 +105,7 @@ namespace BlinkSwitch
 
         #region Private Variables
         private float _XAngle;
+        private List<PlayerSpawn> _PlayerStartPoints;
         #endregion Private Variables
 
         #region Private Methods

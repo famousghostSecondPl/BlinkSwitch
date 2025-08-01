@@ -15,15 +15,15 @@ MonoBehaviour:
   GaussianTextureSize: 1024
   GaussianBlurStep: 4
   GaussianBlurStrength: 1
-  Sigma: 16
+  Sigma: 12
   Threshold: 0.7
   UParam: 0.9
   GaussianBlurSigma1: 1.6
   GaussianBlurSigma2: 3.2
   SobelFilterSize: 4
   SketchTexture: {fileID: 2800000, guid: 68ebbfec02bb15b4b8b46d89cfef7ed4, type: 3}
-  LineStrength: 0.4
-  LineColorStrength: 0.2
+  LineStrength: 1
+  LineColorStrength: 0.1
   Sketch1LineSize: 0.4
   Sketch2LineSize: 0.8
   Sketch1Threshold: 0.3

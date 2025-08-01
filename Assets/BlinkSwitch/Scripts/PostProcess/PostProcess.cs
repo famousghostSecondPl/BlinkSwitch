@@ -33,15 +33,19 @@ namespace BlinkSwitch
         #region Unity Methods
         private void Start()
         {
-            Camera.main.depthTextureMode = DepthTextureMode.DepthNormals;
-            _PostProcessGenerator = new PostProcessGenerator(_ComicBookSettings, _SketchDrawingSettings, _OldTvSettings, Camera.main, _DirectionalLight);
+            Camera camera = GetComponent<Camera>();
+            if(_DirectionalLight == null)
+            {
+                _DirectionalLight = GameObject.FindWithTag("DirectionalLight").transform;
+            }
+            camera.depthTextureMode = DepthTextureMode.DepthNormals;
+            _PostProcessGenerator = new PostProcessGenerator(_ComicBookSettings, _SketchDrawingSettings, _OldTvSettings, camera, _DirectionalLight);
             _PostProcessCount = _PostProcessGenerator.GetPostProcessEffectsCounter();
 
             //TODO: Refactor this part
             StartCoroutine(EyeBluring());
-            Camera cam = Camera.main;
-            _EyeBlurResult = TextureUtilities.CreateTextureBilinearClamp(cam.pixelWidth, cam.pixelHeight, cam.depth);
-            _HorizontalBlurResultTexture = TextureUtilities.CreateTextureBilinearClamp(cam.pixelWidth, cam.pixelHeight, cam.depth);
+            _EyeBlurResult = TextureUtilities.CreateTextureBilinearClamp(camera.pixelWidth, camera.pixelHeight, camera.depth);
+            _HorizontalBlurResultTexture = TextureUtilities.CreateTextureBilinearClamp(camera.pixelWidth, camera.pixelHeight, camera.depth);
             _PostProcessIndex = _PostProcessIndex = Random.Range(0, _PostProcessCount * 100) / 100;
         }
 
