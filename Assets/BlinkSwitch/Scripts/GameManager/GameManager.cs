@@ -86,45 +86,45 @@ namespace BlinkSwitch
                 {
                     if (playerIndex == 0)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 1.0f);
+                        playerInput.camera.rect = new Rect(-0.001f, 0.0f, 0.5f, 1.0f);
                     }
                     else if (playerIndex == 1)
                     {
-                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 1.0f);
+                        playerInput.camera.rect = new Rect(0.501f, 0.0f, 0.5f, 1.0f);
                     }
                 }
                 else if (PlayersAmount == 3)
                 {
                     if (playerIndex == 0)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(-0.001f, -0.001f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 1)
                     {
-                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.501f, -0.001f, 0.5f, 0.5f);
                     }
                     else if(playerIndex == 2)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 1.0f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.0f, 0.501f, 1.0f, 0.5f);
                     }
                 }
                 else if (PlayersAmount == 3)
                 {
                     if (playerIndex == 0)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(-0.001f, -0.001f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 1)
                     {
-                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.501f, -0.001f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 2)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(-0.001f, 0.501f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 3)
                     {
-                        playerInput.camera.rect = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.501f, 0.501f, 0.5f, 0.5f);
                     }
                 }
             }
