@@ -20,7 +20,7 @@ namespace BlinkSwitch
 
         [HideInInspector]
         public Rigidbody Body;
-        public Camera _MainCamera;
+        public Camera MainCamera;
         public PlayerInput PlayerInput;
         public float MovementSpeed
         {
@@ -77,6 +77,7 @@ namespace BlinkSwitch
         #endregion Public Methods
 
         #region Unity Methods
+
         private void Start()
         {
             _PlayerStartPoints = FindObjectsByType<PlayerSpawn>(FindObjectsSortMode.None).ToList();
@@ -85,10 +86,10 @@ namespace BlinkSwitch
             transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
             PlayerState = new PlayerIdle();
             Body = GetComponent<Rigidbody>();
-            PlayerInput = GetComponent<PlayerInput>();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+
 
         private void Update()
         {
@@ -111,7 +112,7 @@ namespace BlinkSwitch
         #region Private Methods
         private void Rotate()
         {
-            var playerInput = GetComponent<PlayerInput>();
+            var playerInput = PlayerInput;
             Vector2 look = playerInput.actions["Look"].ReadValue<Vector2>();
             var horizontalAxis = look.x;
             transform.Rotate(horizontalAxis * transform.up * _RotationSpeed * Time.deltaTime);
@@ -120,7 +121,7 @@ namespace BlinkSwitch
 
             _XAngle += vericalAxis * _RotationSpeed * Time.deltaTime;
             _XAngle = Mathf.Clamp(_XAngle, -90.0f, 90.0f);
-            _MainCamera.transform.localRotation = Quaternion.Euler(Vector3.right * _XAngle);
+            MainCamera.transform.localRotation = Quaternion.Euler(Vector3.right * _XAngle);
 
         }
         #endregion Private Methods

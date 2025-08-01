@@ -8,7 +8,6 @@ namespace BlinkSwitch
     {
         #region Inspector Variables
         [Header("Player Input")]
-        [SerializeField] private PlayerInput _PlayerInput;
 
         [Header("Post Process Effects Settings")]
         [SerializeField] private Transform _DirectionalLight;
@@ -30,28 +29,35 @@ namespace BlinkSwitch
         [SerializeField] private float _BlinkingSpeed = 0.01f;
         #endregion Inspector Variables
 
+        #region Public Variables
+        public Camera PlayerCamera;
+        public PlayerInput PlayerInput;
+        #endregion Public Variables
+
         #region Unity Methods
+
         private void Start()
         {
-            Camera camera = GetComponent<Camera>();
+            PlayerCamera = GetComponent<Camera>();
+            PlayerInput = GetComponent<PlayerInput>();
             if(_DirectionalLight == null)
             {
                 _DirectionalLight = GameObject.FindWithTag("DirectionalLight").transform;
             }
-            camera.depthTextureMode = DepthTextureMode.DepthNormals;
-            _PostProcessGenerator = new PostProcessGenerator(_ComicBookSettings, _SketchDrawingSettings, _OldTvSettings, camera, _DirectionalLight);
+            PlayerCamera.depthTextureMode = DepthTextureMode.DepthNormals;
+            _PostProcessGenerator = new PostProcessGenerator(_ComicBookSettings, _SketchDrawingSettings, _OldTvSettings, PlayerCamera, _DirectionalLight);
             _PostProcessCount = _PostProcessGenerator.GetPostProcessEffectsCounter();
 
             //TODO: Refactor this part
             StartCoroutine(EyeBluring());
-            _EyeBlurResult = TextureUtilities.CreateTextureBilinearClamp(camera.pixelWidth, camera.pixelHeight, camera.depth);
-            _HorizontalBlurResultTexture = TextureUtilities.CreateTextureBilinearClamp(camera.pixelWidth, camera.pixelHeight, camera.depth);
+            _EyeBlurResult = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
+            _HorizontalBlurResultTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
             _PostProcessIndex = _PostProcessIndex = Random.Range(0, _PostProcessCount * 100) / 100;
         }
 
         private void Update()
         {
-            if (_PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
+            if (PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
             {
                 StartCoroutine(Blink());
             }
