@@ -105,7 +105,7 @@ MonoBehaviour:
   _VerticalBlurMaterial: {fileID: 2100000, guid: 9eff9c90ee0621345b54e9ebef2ea7b0, type: 2}
   _BlurSteps: 4
   _BlurStrength: 0
-  _BlurSpeedInSeconds: 0.1
+  _BlurSpeedInSeconds: 100
   _MaxBlurStrength: 5
   _BlinkMaterial: {fileID: 2100000, guid: 72d497e136d1d604193cc220954fd11c, type: 2}
   _BlinkingSpeed: 0.01
@@ -216,6 +216,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 9caa3d8a-6b2f-4e8e-8bad-6ede561bd9be
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 9bfc8923-9def-4e3b-8d39-d3151e064c3f
+    m_ActionName: 'Player/Fire[/Mouse/leftButton,/DualSenseGamepadHID/rightTrigger]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -373,6 +377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bff9f0dccf4c14d4997f44324a91f358, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _RegularBullet: {fileID: 2942007982540816331, guid: 5bffa54d6ac42294b92602ba40b51ccd, type: 3}
   _MovementSpeed: 10
   _RotationSpeed: 90
   _JumpForce: 100

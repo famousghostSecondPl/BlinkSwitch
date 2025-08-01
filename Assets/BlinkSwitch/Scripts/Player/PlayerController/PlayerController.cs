@@ -9,6 +9,7 @@ namespace BlinkSwitch
     public class PlayerController : MonoBehaviour
     {
         #region Inspector Variables
+        [SerializeField] private GameObject _RegularBullet;
         [SerializeField] private float _MovementSpeed;
         [SerializeField] private float _RotationSpeed;
         [SerializeField] private float _JumpForce;
@@ -88,6 +89,8 @@ namespace BlinkSwitch
             Body = GetComponent<Rigidbody>();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            _PlayerIsShooting = false;
+            MainCamera = PlayerInput.camera;
         }
 
 
@@ -97,6 +100,8 @@ namespace BlinkSwitch
             {
                 PlayerState = new PlayerIdle();
             }
+            ClickFire();
+            Fire();
             Rotate();
             PlayerState = PlayerState.GetState(this);
             PlayerState.Update(this);
@@ -107,6 +112,7 @@ namespace BlinkSwitch
         #region Private Variables
         private float _XAngle;
         private List<PlayerSpawn> _PlayerStartPoints;
+        private bool _PlayerIsShooting;
         #endregion Private Variables
 
         #region Private Methods
@@ -123,6 +129,24 @@ namespace BlinkSwitch
             _XAngle = Mathf.Clamp(_XAngle, -90.0f, 90.0f);
             MainCamera.transform.localRotation = Quaternion.Euler(Vector3.right * _XAngle);
 
+        }
+
+        private void ClickFire()
+        {
+            _PlayerIsShooting = PlayerInput.actions["Fire"].WasPressedThisFrame();
+        }
+
+        private void Fire()
+        {
+            if (_PlayerIsShooting)
+            {
+                var bullet = Instantiate(_RegularBullet, transform.position + MainCamera.transform.forward * 1.5f, Quaternion.identity);
+                RegularBullet regularBullet = bullet.GetComponent<RegularBullet>();
+                if (bullet != null && regularBullet != null)
+                {
+                    regularBullet.Fire(MainCamera.transform.forward);
+                }
+            }
         }
         #endregion Private Methods
     }
