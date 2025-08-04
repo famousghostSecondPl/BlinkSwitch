@@ -13,20 +13,22 @@ namespace BlinkSwitch
         #region Unity Methods
         private void Start()
         {
-            GameManager.PlayersAmount = 1;
+            BlinkSwitchInstance.Instance.PlayersAmount = 1;
+            SceneManager.sceneLoaded += BlinkSwitchInstance.Instance.SpawnGameManager;
         }
         #endregion Unity Methods
 
         #region Public Methods
         public void ChangePlayer()
         {
-            GameManager.PlayersAmount = _DropDownList.value + 1;
+            BlinkSwitchInstance.Instance.PlayersAmount = _DropDownList.value + 1;
         }
 
         public void OpenMap(int sceneIndex)
         {
             SceneManager.LoadScene(sceneIndex);
         }
-        #endregion Public Method
+        #endregion Public Methods
+
     }
 }

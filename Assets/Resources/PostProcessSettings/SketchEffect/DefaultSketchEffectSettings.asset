@@ -21,6 +21,7 @@ MonoBehaviour:
   GaussianBlurSigma1: 1.4
   GaussianBlurSigma2: 1.8
   SobelFilterSize: 2
+  UseDoubleDOG: 1
   SketchTexture: {fileID: 2800000, guid: 68ebbfec02bb15b4b8b46d89cfef7ed4, type: 3}
   LineStrength: 1
   LineColorStrength: 0.15
