@@ -21,6 +21,7 @@ namespace BlinkSwitch
         public float SobelFilterSize;
 
         [Header("Pencil effect params")]
+        public bool UseDoubleDOG;
         public Texture SketchTexture;
         public float LineStrength;
         [Range(0.0f, 1.0f)]

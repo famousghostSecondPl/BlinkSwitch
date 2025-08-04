@@ -37,12 +37,15 @@ namespace BlinkSwitch
 
             Graphics.Blit(null, _DifferenceOfGaussiansTexture, _DifferenceOfGaussianMaterial);
 
-            _GaussianBlurMaterial.SetFloat(_GaussianBlurSigmaId, _Settings.GaussianBlurSigma1);
-            Graphics.Blit(_DifferenceOfGaussiansTexture, _GaussianBlurTexture1, _GaussianBlurMaterial);
-            _GaussianBlurMaterial.SetFloat(_GaussianBlurSigmaId, _Settings.GaussianBlurSigma2);
-            Graphics.Blit(_DifferenceOfGaussiansTexture, _GaussianBlurTexture2, _GaussianBlurMaterial);
+            if (_Settings.UseDoubleDOG)
+            {
+                _GaussianBlurMaterial.SetFloat(_GaussianBlurSigmaId, _Settings.GaussianBlurSigma1);
+                Graphics.Blit(_DifferenceOfGaussiansTexture, _GaussianBlurTexture1, _GaussianBlurMaterial);
+                _GaussianBlurMaterial.SetFloat(_GaussianBlurSigmaId, _Settings.GaussianBlurSigma2);
+                Graphics.Blit(_DifferenceOfGaussiansTexture, _GaussianBlurTexture2, _GaussianBlurMaterial);
 
-            Graphics.Blit(null, _DifferenceOfGaussiansTexture, _DifferenceOfGaussianMaterial);
+                Graphics.Blit(null, _DifferenceOfGaussiansTexture, _DifferenceOfGaussianMaterial);
+            }
 
             Graphics.Blit(_DifferenceOfGaussiansTexture, _DogSobelFilterTexture, _SobelFilterMaterial);
             _PencilEffectMaterial.SetMatrix(_MainLightDirectionMatrixId, _DirectionalLight.localToWorldMatrix);
