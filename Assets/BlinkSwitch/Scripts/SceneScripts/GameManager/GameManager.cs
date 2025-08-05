@@ -39,8 +39,13 @@ namespace BlinkSwitch
                 Debug.LogError("Cannot spawn more players, because unity cannot find free gamepad or keyboard to assign to player");
                 for(int i = _PlayerInputs.Count; i < playersAmount; ++i)
                 {
-                    var playerInput = Instantiate(_PlayerInputManager.playerPrefab);
-                    playerInput.GetComponentInChildren<PlayerInput>().DeactivateInput();
+                    var player = Instantiate(_PlayerInputManager.playerPrefab);
+                    var playerInput = player.GetComponentInChildren<PlayerInput>();
+                    if (playerInput != null)
+                    {
+                        playerInput.DeactivateInput();
+                        _PlayerInputs.Add(playerInput);
+                    }
                 }
             }
             BlinkSwitchInstance.Instance.PlayersAmount = _PlayerInputs.Count;
@@ -57,7 +62,7 @@ namespace BlinkSwitch
                 var playerInput = _PlayerInputs[playerIndex];
                 if (playersAmount == 1)
                 {
-                    playerInput.camera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+                    playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
                 }
                 else if (playersAmount == 2)
                 {
@@ -74,34 +79,34 @@ namespace BlinkSwitch
                 {
                     if (playerIndex == 0)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 1)
                     {
-                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 2)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 1.0f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 1.0f, 0.5f);
                     }
                 }
-                else if (playersAmount == 3)
+                else if (playersAmount == 4)
                 {
                     if (playerIndex == 0)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 1)
                     {
-                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 2)
                     {
-                        playerInput.camera.rect = new Rect(0.0f, 0.5f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
                     }
                     else if (playerIndex == 3)
                     {
-                        playerInput.camera.rect = new Rect(0.5f, 0.5f, 0.5f, 0.5f);
+                        playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 0.5f);
                     }
                 }
             }
