@@ -43,7 +43,6 @@ Shader "BlinkSwitch/BlinkPostProcess"
             sampler2D _PostProcessTexture;
             float _Blink;
 
-
             float4 frag (v2f i) : SV_Target
             {
                 float4 col = tex2D(_PostProcessTexture, i.uv);

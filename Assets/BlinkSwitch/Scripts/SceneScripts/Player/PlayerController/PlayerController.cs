@@ -1,6 +1,7 @@
 namespace BlinkSwitch
 {
     using NUnit.Framework;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
@@ -9,7 +10,9 @@ namespace BlinkSwitch
     public class PlayerController : MonoBehaviour
     {
         #region Inspector Variables
-        [SerializeField] private GameObject _RegularBullet;
+        [SerializeField] private float _RespawnTimeInSeconds;
+        [SerializeField] private List<IWeapon> _Weapons;
+        [SerializeField] private PlayerStats _Stats;
         [SerializeField] private float _MovementSpeed;
         [SerializeField] private float _RotationSpeed;
         [SerializeField] private float _JumpForce;
@@ -19,10 +22,10 @@ namespace BlinkSwitch
         #region Public Variables
         public IPlayerState PlayerState;
 
-        [HideInInspector]
-        public Rigidbody Body;
-        public Camera MainCamera;
-        public PlayerInput PlayerInput;
+        [HideInInspector] public IWeapon CurrentWeapon;
+        [HideInInspector] public Rigidbody Body;
+        [HideInInspector] public Camera MainCamera;
+        [HideInInspector] public PlayerInput PlayerInput;
         public float MovementSpeed
         {
             get => _MovementSpeed;
@@ -89,19 +92,39 @@ namespace BlinkSwitch
             Body = GetComponent<Rigidbody>();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            _PlayerIsShooting = false;
             MainCamera = PlayerInput.camera;
+            CurrentWeapon = _Weapons[0];
+            _WeaponIndex = 0;
+            for(int i = 0; i < 3; ++i)
+            {
+                if(i == _WeaponIndex)
+                {
+                    continue;
+                }
+                _Weapons[i].GetComponent<MeshRenderer>().enabled = false;
+            }
+            _Weapons[_WeaponIndex].GetComponent<MeshRenderer>().enabled = true;
         }
 
 
         private void Update()
         {
+            if(_Stats.Health <= 0.0f && _Stats.IsAlive)
+            {
+                StartCoroutine(Respawn());
+            }
             if (PlayerState == null)
             {
                 PlayerState = new PlayerIdle();
             }
-            ClickFire();
-            Fire();
+            SwitchWeapon();
+            CurrentWeapon.Fire(
+                PlayerInput, 
+                MainCamera.transform.rotation, 
+                MainCamera.transform.position + MainCamera.transform.forward * 1.5f, 
+                MainCamera.transform.forward);
+            CurrentWeapon.UpdateFire();
+            CurrentWeapon.Reload(PlayerInput);
             Rotate();
             PlayerState = PlayerState.GetState(this);
             PlayerState.Update(this);
@@ -112,7 +135,7 @@ namespace BlinkSwitch
         #region Private Variables
         private float _XAngle;
         private List<PlayerSpawn> _PlayerStartPoints;
-        private bool _PlayerIsShooting;
+        private int _WeaponIndex;
         #endregion Private Variables
 
         #region Private Methods
@@ -128,25 +151,57 @@ namespace BlinkSwitch
             _XAngle += vericalAxis * _RotationSpeed * Time.deltaTime;
             _XAngle = Mathf.Clamp(_XAngle, -90.0f, 90.0f);
             MainCamera.transform.localRotation = Quaternion.Euler(Vector3.right * _XAngle);
-
         }
 
-        private void ClickFire()
+        private void SwitchWeapon()
         {
-            _PlayerIsShooting = PlayerInput.actions["Fire"].WasPressedThisFrame();
-        }
-
-        private void Fire()
-        {
-            if (_PlayerIsShooting)
+            int previousWeaponIndex = _WeaponIndex;
+            if (_Weapons.Count < 3)
             {
-                var bullet = Instantiate(_RegularBullet, transform.position + MainCamera.transform.forward * 1.5f, Quaternion.identity);
-                RegularBullet regularBullet = bullet.GetComponent<RegularBullet>();
-                if (bullet != null && regularBullet != null)
-                {
-                    regularBullet.Fire(MainCamera.transform.forward);
-                }
+                Debug.LogError("[PlayerController]: Forget to add all weapon prefabs to player prefab");
             }
+            if (PlayerInput.actions["Weapon1"].WasPressedThisFrame())
+            {
+                _WeaponIndex = 0;
+            }
+            if (PlayerInput.actions["Weapon2"].WasPressedThisFrame())
+            {
+                _WeaponIndex = 1;
+            }
+            if (PlayerInput.actions["Weapon3"].WasPressedThisFrame())
+            {
+                _WeaponIndex = 2;
+            }
+            if(previousWeaponIndex == _WeaponIndex)
+            {
+                return;
+            }
+            CurrentWeapon = _Weapons[_WeaponIndex];
+            for (int i = 0; i < 3; ++i)
+            {
+                if (i == _WeaponIndex)
+                {
+                    continue;
+                }
+                _Weapons[i].GetComponent<MeshRenderer>().enabled = false;
+            }
+            _Weapons[_WeaponIndex].GetComponent<MeshRenderer>().enabled = true;
+        }
+
+        private IEnumerator Respawn()
+        {
+            _Stats.IsAlive = false;
+            _Stats.RestartHealth();
+            PlayerInput.DeactivateInput();
+            Body.constraints = RigidbodyConstraints.None;
+            yield return new WaitForSeconds(_RespawnTimeInSeconds);
+            Body.constraints = RigidbodyConstraints.FreezeRotation;
+            int randomIndex = Random.Range(0, _PlayerStartPoints.Count - 1);
+            transform.position = _PlayerStartPoints[randomIndex].StartPostion;
+            transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
+            PlayerState = new PlayerIdle();
+            PlayerInput.ActivateInput();
+            _Stats.IsAlive = true;
         }
         #endregion Private Methods
     }

@@ -1,14 +1,13 @@
 namespace BlinkSwitch
 {
     using System.Collections;
+    using System.Runtime.CompilerServices;
     using UnityEngine;
     using UnityEngine.InputSystem;
 
     public sealed class PostProcess : MonoBehaviour
     {
         #region Inspector Variables
-        [Header("Player Input")]
-
         [Header("Post Process Effects Settings")]
         [SerializeField] private Transform _DirectionalLight;
         [SerializeField] private ComicBookSettings _ComicBookSettings;
@@ -30,8 +29,8 @@ namespace BlinkSwitch
         #endregion Inspector Variables
 
         #region Public Variables
-        public Camera PlayerCamera;
-        public PlayerInput PlayerInput;
+        [HideInInspector] public Camera PlayerCamera;
+        [HideInInspector] public PlayerInput PlayerInput;
         #endregion Public Variables
 
         #region Unity Methods
@@ -71,7 +70,8 @@ namespace BlinkSwitch
             _BlinkMaterial.SetTexture(_PostProcessTextureId, _PostProcessEffect.GeneratePostProcess(source));
 
             _BlinkMaterial.SetFloat(_BlinkId, _BlinkValue);
-
+            _BlinkMaterial.SetInt(_PlayersAmountId, BlinkSwitchInstance.Instance.PlayersAmount);
+            _BlinkMaterial.SetInt(_PlayerIndexId, PlayerInput.playerIndex);
             
             if (_BlurStrength > 0.0f)
             {
@@ -91,44 +91,8 @@ namespace BlinkSwitch
         #endregion Unity Methhods
 
         #region Private Variables
-        //Outline shader
-        private RenderTexture _OutlineTexture;
-        private readonly int _OutlineDepthThresholdId = Shader.PropertyToID("_OutlineDepthThreshold");
-        private readonly int _OutlineNormalThresholdId = Shader.PropertyToID("_OutlineNormalThreshold");
-        private readonly int _OutlineSizeId = Shader.PropertyToID("_OutlineSize");
-
-        //Dithering Shader
-        private readonly int _OutlineTextureId = Shader.PropertyToID("_OutlineTexture");
-        private readonly int _PixelSizeId = Shader.PropertyToID("_PixelSize");
-        private readonly int _BitsPerColorId = Shader.PropertyToID("_BitsPerColor");
-        private readonly int _DitheringThresholdId = Shader.PropertyToID("_DitheringSpreadSize");
-
-        //Old Tv Shader
-        private readonly int _CurvatureId = Shader.PropertyToID("_Curvature");
-        private readonly int _OldTvPixelSizeId = Shader.PropertyToID("_OldTvPixelSize");
-        private readonly int _MinLuminanceThresholdId = Shader.PropertyToID("_MinLuminanceThreshold");
-        private readonly int _MaxLuminanceThresholdId = Shader.PropertyToID("_MaxLuminanceThreshold");
-
-        //Pencil Shader
-        private RenderTexture _GaussianBlurTexture1;
-        private RenderTexture _GaussianBlurTexture2;
-        private RenderTexture _DifferenceOfGaussiansTexture;
-        private RenderTexture _DogSobelFilterTexture;
-        private RenderTexture _PencilEffectTexture;
-
-        private readonly int _GaussianBlurTexture1Id = Shader.PropertyToID("_GaussianBlurTexture1");
-        private readonly int _GaussianBlurTexture2Id = Shader.PropertyToID("_GaussianBlurTexture2");
-        private readonly int _SketchTextureId = Shader.PropertyToID("_SketchTexture");
-        private readonly int _DogWithoutSobelFilterTextureId = Shader.PropertyToID("_DogWithoutFilterTexture");
-
-        private readonly int _SigmaId = Shader.PropertyToID("_Sigma");
-        private readonly int _ThresholdId = Shader.PropertyToID("_Threshold");
-        private readonly int _UValueId = Shader.PropertyToID("_U");
-        private readonly int _GaussianBlurSigmaId = Shader.PropertyToID("_GaussianBlurSigma");
-        private readonly int _GaussianBlurStrengthId = Shader.PropertyToID("_GaussianBlurStrength");
-        private readonly int _GaussianBlurStepsId = Shader.PropertyToID("_GaussianBlurSteps");
-        private readonly int _SobelFilterSizeId = Shader.PropertyToID("_SobelFilterSize");
-        private readonly int _LineStrengthId = Shader.PropertyToID("_LineStrength");
+        private readonly int _PlayersAmountId = Shader.PropertyToID("_PlayersAmount");
+        private readonly int _PlayerIndexId = Shader.PropertyToID("_PlayerIndex");
 
         private PostProcessGenerator _PostProcessGenerator;
         private IPostProcessEffect _PostProcessEffect;
@@ -140,9 +104,6 @@ namespace BlinkSwitch
 
         //Merged Shader
         private RenderTexture _EyeBlurResult;
-        private RenderTexture _ComicBookPostProcessTetxure;
-        private RenderTexture _InvertPostProcessTexture;
-        private RenderTexture _OldTvPostProcessTexture;
 
         private readonly int _PostProcessTextureId = Shader.PropertyToID("_PostProcessTexture");
 

@@ -7,22 +7,17 @@ namespace BlinkSwitch
 
     public sealed class GameManager : MonoBehaviour
     {
-
         #region Unity Methods
         private void Start()
         {
             _PlayerInputManager = GetComponent<PlayerInputManager>();
             _PlayerInputs = new List<PlayerInput>();
-            if (BlinkSwitchInstance.Instance.PlayersAmount > 1)
-            {
-                _PlayerInputManager.splitScreen = true;
-            }
-            else
-            {
-                _PlayerInputManager.splitScreen = false;
-            }
+            var playersAmount = BlinkSwitchInstance.Instance.PlayersAmount;
+
+            ChooseMultiplayerMode(playersAmount);
             int playerIndex = 0;
-            while(playerIndex < BlinkSwitchInstance.Instance.PlayersAmount)
+
+            while(playerIndex < playersAmount)
             {
                 PlayerInput playerInput = null;
                 if(InitializeKeyboardPlayer(playerInput, playerIndex, BlinkSwitchInstance.Instance.AllowKeyboardAssigment))
@@ -39,9 +34,14 @@ namespace BlinkSwitch
                     break;
                 }
             }
-            if(BlinkSwitchInstance.Instance.PlayersAmount != _PlayerInputs.Count)
+            if(playersAmount != _PlayerInputs.Count)
             {
                 Debug.LogError("Cannot spawn more players, because unity cannot find free gamepad or keyboard to assign to player");
+                for(int i = _PlayerInputs.Count; i < playersAmount; ++i)
+                {
+                    var playerInput = Instantiate(_PlayerInputManager.playerPrefab);
+                    playerInput.GetComponentInChildren<PlayerInput>().DeactivateInput();
+                }
             }
             BlinkSwitchInstance.Instance.PlayersAmount = _PlayerInputs.Count;
             InitializeViewport();
@@ -51,14 +51,15 @@ namespace BlinkSwitch
         #region Private Methods
         private void InitializeViewport()
         {
-            for (int playerIndex = 0; playerIndex < BlinkSwitchInstance.Instance.PlayersAmount; ++playerIndex)
+            var playersAmount = BlinkSwitchInstance.Instance.PlayersAmount;
+            for (int playerIndex = 0; playerIndex < playersAmount; ++playerIndex)
             {
                 var playerInput = _PlayerInputs[playerIndex];
-                if (BlinkSwitchInstance.Instance.PlayersAmount == 1)
+                if (playersAmount == 1)
                 {
                     playerInput.camera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
                 }
-                else if (BlinkSwitchInstance.Instance.PlayersAmount == 2)
+                else if (playersAmount == 2)
                 {
                     if (playerIndex == 0)
                     {
@@ -69,7 +70,7 @@ namespace BlinkSwitch
                         playerInput.camera.rect = new Rect(0.5f, 0.0f, 0.5f, 1.0f);
                     }
                 }
-                else if (BlinkSwitchInstance.Instance.PlayersAmount == 3)
+                else if (playersAmount == 3)
                 {
                     if (playerIndex == 0)
                     {
@@ -84,7 +85,7 @@ namespace BlinkSwitch
                         playerInput.camera.rect = new Rect(0.0f, 0.5f, 1.0f, 0.5f);
                     }
                 }
-                else if (BlinkSwitchInstance.Instance.PlayersAmount == 3)
+                else if (playersAmount == 3)
                 {
                     if (playerIndex == 0)
                     {
@@ -155,6 +156,18 @@ namespace BlinkSwitch
             }
             _PlayerInputs.Add(playerInput);
             return true;
+        }
+
+        private void ChooseMultiplayerMode(int playersAmount)
+        {
+            if (playersAmount > 1)
+            {
+                _PlayerInputManager.splitScreen = true;
+            }
+            else
+            {
+                _PlayerInputManager.splitScreen = false;
+            }
         }
         #endregion Private Methods
 
