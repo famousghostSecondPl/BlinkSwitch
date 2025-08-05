@@ -405,7 +405,7 @@ MonoBehaviour:
   _Stats: {fileID: -7978651232791536300}
   _MovementSpeed: 10
   _RotationSpeed: 90
-  _JumpForce: 100
+  _JumpForce: 6
   _MaxDistanceFromTheGround: 1.2
   CurrentWeapon: {fileID: 0}
   Body: {fileID: 0}

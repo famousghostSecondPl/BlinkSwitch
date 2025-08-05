@@ -62,7 +62,7 @@ namespace BlinkSwitch
                 var playerInput = _PlayerInputs[playerIndex];
                 if (playersAmount == 1)
                 {
-                    playerInput.camera.rect = new Rect(0.0f, 0.0f, 0.5f, 0.5f);
+                    playerInput.camera.rect = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
                 }
                 else if (playersAmount == 2)
                 {

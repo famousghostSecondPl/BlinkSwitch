@@ -70,7 +70,7 @@ namespace BlinkSwitch
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, _MaxDistanceFromTheGround))
             {
-                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
+                if (Vector3.Dot(Vector3.up, hit.normal) >= 0.99f)
                 {
                     return true;
                 }
@@ -192,7 +192,7 @@ namespace BlinkSwitch
         {
             _Stats.IsAlive = false;
             _Stats.RestartHealth();
-            PlayerInput.DeactivateInput();
+            PlayerInput.enabled = false;
             Body.constraints = RigidbodyConstraints.None;
             yield return new WaitForSeconds(_RespawnTimeInSeconds);
             Body.constraints = RigidbodyConstraints.FreezeRotation;
@@ -200,7 +200,7 @@ namespace BlinkSwitch
             transform.position = _PlayerStartPoints[randomIndex].StartPostion;
             transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
             PlayerState = new PlayerIdle();
-            PlayerInput.ActivateInput();
+            PlayerInput.enabled = true;
             _Stats.IsAlive = true;
         }
         #endregion Private Methods
