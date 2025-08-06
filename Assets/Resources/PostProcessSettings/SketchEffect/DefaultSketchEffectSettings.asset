@@ -15,18 +15,18 @@ MonoBehaviour:
   GaussianTextureSize: 1024
   GaussianBlurStep: 4
   GaussianBlurStrength: 1
-  Sigma: 2
-  Threshold: 1.05
-  UParam: 1.4
-  GaussianBlurSigma1: 1.4
-  GaussianBlurSigma2: 1.8
-  SobelFilterSize: 2
+  Sigma: 17
+  Threshold: 1.6
+  UParam: 1.5
+  GaussianBlurSigma1: 1.2
+  GaussianBlurSigma2: 2
+  SobelFilterSize: 0.3
   UseDoubleDOG: 1
   SketchTexture: {fileID: 2800000, guid: 68ebbfec02bb15b4b8b46d89cfef7ed4, type: 3}
   LineStrength: 1
-  LineColorStrength: 0.15
-  Sketch1LineSize: 0.28
-  Sketch2LineSize: 0.38
-  Sketch1Threshold: 0.8
-  SketchSkyStrength: 8
+  LineColorStrength: 0.5
+  Sketch1LineSize: 0.8
+  Sketch2LineSize: 1.5
+  Sketch1Threshold: 1.5
+  SketchSkyStrength: 1.34
   SketchSkyTextureSize: 3

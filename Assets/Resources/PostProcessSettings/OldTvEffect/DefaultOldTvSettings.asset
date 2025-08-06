@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: DefaultOldTvSettings
   m_EditorClassIdentifier: 
   Curvature: 2
-  OldTvPixelSize: 6
+  OldTvPixelSize: 3
   MinLuminanceThreshold: 0.1
   MaxLuminanceThreshold: 0.3
