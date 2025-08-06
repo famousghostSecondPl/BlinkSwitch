@@ -891,7 +891,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _Bullet: {fileID: 2942007982540816331, guid: 5bffa54d6ac42294b92602ba40b51ccd, type: 3}
-  _Settings: {fileID: 11400000, guid: 08fed68cd1d6ff24b935ffdde21f3eed, type: 2}
+  _Settings: {fileID: 11400000, guid: bf26ab04945ab8346af932d27482546a, type: 2}
   IsActive: 0
   CurrentAmmoInMagazine: 0
   CurrentAmmo: 0

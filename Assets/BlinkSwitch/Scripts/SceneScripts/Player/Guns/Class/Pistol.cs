@@ -8,7 +8,7 @@ namespace BlinkSwitch
     {
         #region Inspector Variables
         [SerializeField] private GameObject _Bullet;
-        [SerializeField] private MachineGunSettings _Settings;
+        [SerializeField] private PistolSettings _Settings;
         #endregion Inspector Variables
 
         #region Public Variables
@@ -42,7 +42,9 @@ namespace BlinkSwitch
 
         public override bool Reload(PlayerInput playerInput)
         {
-            if (!_IsReloading && playerInput.actions["Reload"].WasPressedThisFrame())
+            if (!_IsReloading 
+                && playerInput.actions["Reload"].WasPressedThisFrame()
+                && CurrentAmmoInMagazine < _Settings.MaxAmmoInMagazine)
             {
                 StartCoroutine(Reloading());
             }

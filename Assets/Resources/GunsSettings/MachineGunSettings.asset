@@ -15,6 +15,6 @@ MonoBehaviour:
   ShootingSpeedInSeconds: 0.1
   Speed: 30
   Damage: 5
-  MaxAmmo: 40
+  MaxAmmo: 200
   MaxAmmoInMagazine: 30
   ReloadingSpeed: 3

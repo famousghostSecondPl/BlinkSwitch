@@ -37,7 +37,9 @@ namespace BlinkSwitch
 
         public override bool Reload(PlayerInput playerInput)
         {
-            if(!_IsReloading && playerInput.actions["Reload"].WasPressedThisFrame())
+            if(!_IsReloading 
+                && playerInput.actions["Reload"].WasPressedThisFrame()
+                && CurrentAmmoInMagazine < _Settings.MaxAmmoInMagazine)
             {
                 StartCoroutine(Reloading());
             }
