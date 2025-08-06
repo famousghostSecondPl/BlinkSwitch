@@ -109,6 +109,10 @@ namespace BlinkSwitch
 
         private void Update()
         {
+            if(!_Stats.IsAlive)
+            {
+                return;
+            }
             if(_Stats.Health <= 0.0f && _Stats.IsAlive)
             {
                 StartCoroutine(Respawn());
@@ -190,9 +194,9 @@ namespace BlinkSwitch
 
         private IEnumerator Respawn()
         {
+            //TODO: Remove input when player is dying
             _Stats.IsAlive = false;
             _Stats.RestartHealth();
-            PlayerInput.enabled = false;
             Body.constraints = RigidbodyConstraints.None;
             yield return new WaitForSeconds(_RespawnTimeInSeconds);
             Body.constraints = RigidbodyConstraints.FreezeRotation;
@@ -200,7 +204,6 @@ namespace BlinkSwitch
             transform.position = _PlayerStartPoints[randomIndex].StartPostion;
             transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
             PlayerState = new PlayerIdle();
-            PlayerInput.enabled = true;
             _Stats.IsAlive = true;
         }
         #endregion Private Methods
