@@ -18,8 +18,8 @@ MonoBehaviour:
   Sigma: 17
   Threshold: 1.6
   UParam: 1.5
-  GaussianBlurSigma1: 1.2
-  GaussianBlurSigma2: 2
+  GaussianBlurSigma1: 0.86
+  GaussianBlurSigma2: 1
   SobelFilterSize: 0.3
   UseDoubleDOG: 1
   SketchTexture: {fileID: 2800000, guid: 68ebbfec02bb15b4b8b46d89cfef7ed4, type: 3}

@@ -122,13 +122,19 @@ namespace BlinkSwitch
                 PlayerState = new PlayerIdle();
             }
             SwitchWeapon();
+            Vector2Int ammo = CurrentWeapon.GetCurrentAmmo();
+            if (ammo != null)
+            {
+                _Stats.CurrentAmmoInMagazine = ammo.x;
+                _Stats.CurrentAmmoInWeapon = ammo.y;
+            }
             CurrentWeapon.Fire(
                 PlayerInput, 
                 MainCamera.transform.rotation, 
                 MainCamera.transform.position + MainCamera.transform.forward * 1.5f, 
                 MainCamera.transform.forward);
             CurrentWeapon.UpdateFire();
-            CurrentWeapon.Reload(PlayerInput);
+            _Stats.IsReloading = CurrentWeapon.Reload(PlayerInput);
             Rotate();
             PlayerState = PlayerState.GetState(this);
             PlayerState.Update(this);

@@ -35,12 +35,18 @@ namespace BlinkSwitch
             }
         }
 
-        public override void Reload(PlayerInput playerInput)
+        public override bool Reload(PlayerInput playerInput)
         {
             if(!_IsReloading && playerInput.actions["Reload"].WasPressedThisFrame())
             {
                 StartCoroutine(Reloading());
             }
+            return _IsReloading;
+        }
+
+        public override Vector2Int GetCurrentAmmo()
+        {
+            return new Vector2Int(CurrentAmmoInMagazine, CurrentAmmo);
         }
 
         #endregion Public Methods

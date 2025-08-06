@@ -40,12 +40,18 @@ namespace BlinkSwitch
             }
         }
 
-        public override void Reload(PlayerInput playerInput)
+        public override bool Reload(PlayerInput playerInput)
         {
             if (!_IsReloading && playerInput.actions["Reload"].WasPressedThisFrame())
             {
                 StartCoroutine(Reloading());
             }
+            return _IsReloading;
+        }
+
+        public override Vector2Int GetCurrentAmmo()
+        {
+            return new Vector2Int(CurrentAmmoInMagazine, CurrentAmmo);
         }
 
         #endregion Public Methods
@@ -73,8 +79,12 @@ namespace BlinkSwitch
         {
             _IsReloading = true;
             yield return new WaitForSeconds(_Settings.ReloadingSpeed);
-            CurrentAmmoInMagazine = CurrentAmmo > _Settings.MaxAmmoInMagazine ? _Settings.MaxAmmoInMagazine : CurrentAmmo;
-            CurrentAmmo -= _Settings.MaxAmmoInMagazine;
+            var ammoDifference = _Settings.MaxAmmoInMagazine - CurrentAmmoInMagazine;
+            CurrentAmmoInMagazine =
+                CurrentAmmo > _Settings.MaxAmmoInMagazine ? 
+                _Settings.MaxAmmoInMagazine 
+                : Mathf.Min(_Settings.MaxAmmoInMagazine, CurrentAmmo + CurrentAmmoInMagazine);
+            CurrentAmmo -= ammoDifference;
             CurrentAmmo = Mathf.Max(CurrentAmmo, 0);
             _IsReloading = false;
         }

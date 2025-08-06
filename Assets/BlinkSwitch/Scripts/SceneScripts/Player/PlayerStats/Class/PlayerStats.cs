@@ -12,6 +12,9 @@ namespace BlinkSwitch
         public float Health;
         public float Speed;
         public bool IsAlive;
+        public int CurrentAmmoInMagazine;
+        public int CurrentAmmoInWeapon;
+        public bool IsReloading;
         #endregion Public Variables
 
         #region Public Methods

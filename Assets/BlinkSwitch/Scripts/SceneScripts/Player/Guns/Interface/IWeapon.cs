@@ -9,6 +9,8 @@ namespace BlinkSwitch
 
         public abstract void UpdateFire();
 
-        public abstract void Reload(PlayerInput playerInput);
+        public abstract bool Reload(PlayerInput playerInput);
+
+        public abstract Vector2Int GetCurrentAmmo();
     }
 }
