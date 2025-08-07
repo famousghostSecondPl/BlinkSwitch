@@ -9,4 +9,5 @@ public class PistolSettings : ScriptableObject
     public int MaxAmmo;
     public int MaxAmmoInMagazine;
     public float ReloadingSpeed;
+    public float PushForce;
 }

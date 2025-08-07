@@ -34,6 +34,12 @@ namespace BlinkSwitch
                     Debug.LogError("[MachineGunBullet]: Cannot give damage to player");
                 }
             }
+            var body = other.GetComponent<Rigidbody>();
+            if (body != null)
+            {
+                Vector3 dir = this.transform.position - body.transform.position;
+                body.AddForce(dir.normalized * _Settings.PushForce, ForceMode.Impulse);
+            }
             Destroy(this.gameObject);
         }
            

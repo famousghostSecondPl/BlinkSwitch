@@ -23,6 +23,7 @@ namespace BlinkSwitch
         public void RegisterDamage(float damage)
         {
             Health -= damage;
+            Health = Mathf.Max(Health, 0.0f);
             _DamageIndicator = 1.0f;
             if (!_IsShowDamageCoroutineRunnig)
             {

@@ -202,13 +202,13 @@ namespace BlinkSwitch
         {
             //TODO: Remove input when player is dying
             _Stats.IsAlive = false;
-            _Stats.RestartHealth();
             Body.constraints = RigidbodyConstraints.None;
             yield return new WaitForSeconds(_RespawnTimeInSeconds);
             Body.constraints = RigidbodyConstraints.FreezeRotation;
             int randomIndex = Random.Range(0, _PlayerStartPoints.Count - 1);
             transform.position = _PlayerStartPoints[randomIndex].StartPostion;
             transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
+            _Stats.RestartHealth();
             PlayerState = new PlayerIdle();
             _Stats.IsAlive = true;
         }

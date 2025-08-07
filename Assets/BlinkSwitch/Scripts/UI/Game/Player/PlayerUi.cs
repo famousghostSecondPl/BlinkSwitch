@@ -8,6 +8,7 @@ namespace BlinkSwitch
         #region Inspector Variables
         [SerializeField] private TextMeshProUGUI _AmmonInfo;
         [SerializeField] private TextMeshProUGUI _AmmoUI;
+        [SerializeField] private TextMeshProUGUI _HealthUI;
         [SerializeField] private PlayerStats _PlayerStats;
         #endregion Inspector Variables
 
@@ -15,6 +16,7 @@ namespace BlinkSwitch
         private void Update()
         {
             _AmmoUI.text = _PlayerStats.CurrentAmmoInMagazine.ToString() + "/" + _PlayerStats.CurrentAmmoInWeapon.ToString();
+            _HealthUI.text = _PlayerStats.Health.ToString() + " Health";
             if(_PlayerStats.CurrentAmmoInMagazine <= 0 && _PlayerStats.CurrentAmmoInWeapon <= 0)
             {
                 _AmmonInfo.text = "No ammo";

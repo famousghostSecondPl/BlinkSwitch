@@ -18,3 +18,4 @@ MonoBehaviour:
   MaxAmmo: 30
   MaxAmmoInMagazine: 10
   ReloadingSpeed: 1
+  PushForce: 1
