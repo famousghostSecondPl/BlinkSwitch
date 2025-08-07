@@ -16,3 +16,5 @@ MonoBehaviour:
   StartHealth: 100
   Speed: 8
   RunningSpeed: 12
+  BloodStageShowInSeconds: 0.1
+  BloodStageValue: 0.1

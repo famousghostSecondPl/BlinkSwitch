@@ -4,6 +4,7 @@ namespace BlinkSwitch
     using System.Runtime.CompilerServices;
     using UnityEngine;
     using UnityEngine.InputSystem;
+    using UnityEngine.Profiling;
 
     public sealed class PostProcess : MonoBehaviour
     {
@@ -26,6 +27,11 @@ namespace BlinkSwitch
         [SerializeField] private Material _BlinkMaterial;
         [Range(0.01f, 0.1f)]
         [SerializeField] private float _BlinkingSpeed = 0.01f;
+
+        [Header("Blood Shader")]
+        [SerializeField] private PlayerStats _PlayerStats;
+        [SerializeField] private Material _DamageMaterial;
+        [SerializeField] private Texture _ScreenSpaceBloodTexture;
         #endregion Inspector Variables
 
         #region Public Variables
@@ -52,6 +58,7 @@ namespace BlinkSwitch
             StartCoroutine(EyeBluring());
             _EyeBlurResult = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
             _HorizontalBlurResultTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
+            _DamageTextureResult = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
             _PostProcessIndex = _PostProcessIndex = Random.Range(0, _PostProcessCount * 100) / 100;
         }
 
@@ -65,9 +72,12 @@ namespace BlinkSwitch
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
+            _DamageMaterial.SetFloat(_DamageIndicatorId, _PlayerStats.DamageIndicator);
+            _DamageMaterial.SetTexture(_ScreenSpaceBloodTextureId, _ScreenSpaceBloodTexture);
+            Graphics.Blit(source, _DamageTextureResult, _DamageMaterial);
             _PostProcessEffect = _PostProcessGenerator.GetPostProcessEffectFromId(_PostProcessIndex);
             _PostProcessEffect.Setup();
-            _BlinkMaterial.SetTexture(_PostProcessTextureId, _PostProcessEffect.GeneratePostProcess(source));
+            _BlinkMaterial.SetTexture(_PostProcessTextureId, _PostProcessEffect.GeneratePostProcess(_DamageTextureResult));
 
             _BlinkMaterial.SetFloat(_BlinkId, _BlinkValue);
             _BlinkMaterial.SetInt(_PlayersAmountId, BlinkSwitchInstance.Instance.PlayersAmount);
@@ -104,10 +114,17 @@ namespace BlinkSwitch
 
         //Merged Shader
         private RenderTexture _EyeBlurResult;
+        private RenderTexture _DamageTextureResult;
 
         private readonly int _PostProcessTextureId = Shader.PropertyToID("_PostProcessTexture");
 
         private readonly int _BlinkId = Shader.PropertyToID("_Blink");
+
+        //Blood Texture Screen space after getting damage
+        //float _DamageIndicator;
+        //sampler2D _ScreenSpaceBloodTexture;
+        private readonly int _DamageIndicatorId = Shader.PropertyToID("_DamageIndicator");
+        private readonly int _ScreenSpaceBloodTextureId = Shader.PropertyToID("_ScreenSpaceBloodTexture");
 
         private float _BlinkValue;
         private int _PostProcessIndex;

@@ -26,7 +26,7 @@ namespace BlinkSwitch
                 var playerStats = other.GetComponent<PlayerStats>();
                 if (playerStats != null)
                 {
-                    playerStats.GetDamage(_Settings.Damage);
+                    playerStats.RegisterDamage(_Settings.Damage);
                 }
                 else
                 {

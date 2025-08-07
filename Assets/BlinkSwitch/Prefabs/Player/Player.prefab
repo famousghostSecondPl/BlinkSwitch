@@ -379,6 +379,9 @@ MonoBehaviour:
   _MaxBlurStrength: 5
   _BlinkMaterial: {fileID: 2100000, guid: 72d497e136d1d604193cc220954fd11c, type: 2}
   _BlinkingSpeed: 0.01
+  _PlayerStats: {fileID: -7978651232791536300}
+  _DamageMaterial: {fileID: 2100000, guid: 0e2f3462532e10349b75aab6835a74d9, type: 2}
+  _ScreenSpaceBloodTexture: {fileID: 2800000, guid: e9c3fbd93ad644b42bfd7f23778f5c7c, type: 3}
   PlayerCamera: {fileID: 0}
   PlayerInput: {fileID: 0}
 --- !u!1 &2397453191144634746

@@ -9,5 +9,7 @@ namespace BlinkSwitch
         public float StartHealth;
         public float Speed;
         public float RunningSpeed;
+        public float BloodStageShowInSeconds;
+        public float BloodStageValue;
     }
 }

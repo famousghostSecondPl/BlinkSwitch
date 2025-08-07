@@ -27,7 +27,7 @@ namespace BlinkSwitch
                 if (playerStats != null)
                 {
                     float distance = (playerStats.transform.position - this.transform.position).magnitude;
-                    playerStats.GetDamage(_Settings.Damage * (_Settings.ExplosionStrength / Mathf.Max(1.0f, distance * distance)));
+                    playerStats.RegisterDamage(_Settings.Damage * (_Settings.ExplosionStrength / Mathf.Max(1.0f, distance * distance)));
                 }
                 else
                 {
