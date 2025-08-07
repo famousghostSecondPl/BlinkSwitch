@@ -75,8 +75,9 @@ Shader "BlinkSwitch/SobelFilterShader"
 
             float4 frag (v2f i) : SV_Target
             {
-                float sobelLen = length(calculateNormalMapSobel(i.uv * _ScreenParams.xy, _ScreenParams.xy));
-                float4 col = float4(sobelLen, sobelLen, sobelLen, 1.0f);
+                float2 sobelResult = calculateNormalMapSobel(i.uv * _ScreenParams.xy, _ScreenParams.xy);
+                float sobelLen = length(sobelResult);
+                float4 col = float4(sobelLen, sobelResult, 1.0f);
                 return col;
             }
             ENDCG

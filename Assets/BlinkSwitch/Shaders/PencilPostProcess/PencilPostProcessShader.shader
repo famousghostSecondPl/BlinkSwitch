@@ -57,6 +57,11 @@ Shader "BlinkSwitch/PencilPostProcessShader"
             float _SketchSkyStrength;
             float _SketchSkyTextureSize;
 
+            float2 rotateUv(float2 uv, float angle)
+            {
+                return float2(cos(angle) * uv.x - sin(angle) * uv.y, sin(angle) * uv.x + cos(angle) * uv.y);
+            }
+
             float4 frag (v2f i) : SV_Target
             {
                 float3 rayOrigin = _WorldSpaceCameraPos.xyz;
@@ -71,19 +76,24 @@ Shader "BlinkSwitch/PencilPostProcessShader"
 
                 float2 lightUv = mul(float4(worldPos, 1.0f), _MainLightDirectionMatrix).xy;
 
-                float pencilValue = tex2D(_MainTex, i.uv).r * _LineStrength;
+                float3 pencilValue = tex2D(_MainTex, i.uv).rgb;
+
+                float3 normal = normalize(float3(pencilValue.yz, 10.0f));
+
+                float2 newUv = rotateUv(i.uv, atan2(normal.y, normal.x));
+
                 float dogValue = tex2D(_DogWithoutFilterTexture, i.uv).r;
-                float4 sketch1 = tex2D(_SketchTexture, lightUv * _Sketch1LineSize);
-                float4 sketch2 = tex2D(_SketchTexture, (lightUv + float2(0.8f, 0.2f)) * _Sketch2LineSize);
+                float sketch1 = tex2D(_SketchTexture, lightUv * _Sketch1LineSize).r;
+                float sketch2 = tex2D(_SketchTexture, (lightUv + float2(0.8f, 0.2f)) * _Sketch2LineSize).r;
                 float4 sketchScreenSpace = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), tex2D(_SketchTexture, rayDirection * _SketchSkyTextureSize) * _SketchSkyStrength, step(0.001f, _SketchSkyStrength));
                 float lerpValue = 1.0f - dogValue;
 
-                float4 sketchColorResult = lerp(sketch1, sketch2, 1.0f - smoothstep(0.0f, _Sketch1Threshold, lerpValue));
+                float sketchColorResult = 1.0f - lerp(sketch1, sketch2, 1.0f - smoothstep(0.0f, _Sketch1Threshold, lerpValue));
 
-                float4 result = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), sketchColorResult, lerpValue);
+                float4 result = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), float4(0.2f, 0.2f, 0.2f, 1.0f), lerpValue * sketchColorResult);
                 result = lerp(result, sketchScreenSpace, step(_ProjectionParams.z - 1.0f, cameraDepth));
                 float lineColorStrength = 1.0f - _LineColorStrength;
-                result = lerp(float4(lineColorStrength, lineColorStrength, lineColorStrength, 1.0f), result, 1.0f - pencilValue);
+                result = lerp(float4(lineColorStrength, lineColorStrength, lineColorStrength, 1.0f), result, (1.0f - pencilValue.r * sketchColorResult * _LineStrength) );
                 return result;
             }
             ENDCG
