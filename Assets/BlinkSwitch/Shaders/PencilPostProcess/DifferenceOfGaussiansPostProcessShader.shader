@@ -48,7 +48,7 @@ Shader "BlinkSwitch/DifferenceOfGaussiansPostProcessShader"
 
             float4 frag (v2f i) : SV_Target
             {
-                float3 col =  (1.0f + _Sigma) * tex2D(_GaussianBlurTexture1, i.uv).rgb - _Sigma * tex2D(_GaussianBlurTexture2, i.uv).rgb;
+                float3 col =  (1.0f + _Sigma) * tex2D(_GaussianBlurTexture2, i.uv).rgb - _Sigma * tex2D(_GaussianBlurTexture1, i.uv).rgb;
 
                 float colLen = length(col);
     
