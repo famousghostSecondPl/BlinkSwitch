@@ -78,10 +78,6 @@ Shader "BlinkSwitch/PencilPostProcessShader"
 
                 float3 pencilValue = tex2D(_MainTex, i.uv).rgb;
 
-                float3 normal = normalize(float3(pencilValue.yz, 10.0f));
-
-                float2 newUv = rotateUv(i.uv, atan2(normal.y, normal.x));
-
                 float dogValue = tex2D(_DogWithoutFilterTexture, i.uv).r;
                 float sketch1 = tex2D(_SketchTexture, lightUv * _Sketch1LineSize).r;
                 float sketch2 = tex2D(_SketchTexture, (lightUv + float2(0.8f, 0.2f)) * _Sketch2LineSize).r;
