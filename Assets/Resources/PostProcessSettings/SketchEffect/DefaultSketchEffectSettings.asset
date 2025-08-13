@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deec172949b83d740b8b89f95557d841, type: 3}
   m_Name: DefaultSketchEffectSettings
   m_EditorClassIdentifier: 
-  GaussianTextureSize: 2048
+  GaussianTextureSize: 1024
   GaussianBlurStep: 4
   GaussianBlurStrength: 1
   Sigma: 11.2
