@@ -239,8 +239,8 @@ MonoBehaviour:
   _VerticalBlurMaterial: {fileID: 2100000, guid: 9eff9c90ee0621345b54e9ebef2ea7b0, type: 2}
   _BlurSteps: 4
   _BlurStrength: 0
-  _BlurSpeedInSeconds: 100
-  _MaxBlurStrength: 5
+  _BlurSpeedInSeconds: 1
+  _MaxBlurStrength: 3
   _BlinkMaterial: {fileID: 2100000, guid: 72d497e136d1d604193cc220954fd11c, type: 2}
   _BlinkingSpeed: 0.01
   _PlayerStats: {fileID: -7978651232791536300}

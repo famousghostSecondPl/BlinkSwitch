@@ -50,6 +50,11 @@ namespace BlinkSwitch
         {
             return new Vector2Int(CurrentAmmoInMagazine, CurrentAmmo);
         }
+        public override void RestartAmmo()
+        {
+            CurrentAmmoInMagazine = _Settings.MaxAmmoInMagazine;
+            CurrentAmmo = _Settings.MaxAmmo;
+        }
 
         #endregion Public Methods
 

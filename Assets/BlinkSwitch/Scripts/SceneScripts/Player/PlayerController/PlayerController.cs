@@ -209,6 +209,10 @@ namespace BlinkSwitch
             transform.position = _PlayerStartPoints[randomIndex].StartPostion;
             transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
             _Stats.RestartHealth();
+           foreach(var weapon in _Weapons)
+            {
+                weapon.RestartAmmo();
+            }
             PlayerState = new PlayerIdle();
             _Stats.IsAlive = true;
         }

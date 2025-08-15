@@ -40,6 +40,7 @@ namespace BlinkSwitch
         {
             Health = _PlayerSettings.StartHealth;
         }
+
         #endregion Public Methods
 
         #region Unity Methods

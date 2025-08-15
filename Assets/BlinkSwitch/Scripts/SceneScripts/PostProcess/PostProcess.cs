@@ -64,10 +64,10 @@ namespace BlinkSwitch
 
         private void Update()
         {
-            if (PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
+            /*if (PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
             {
                 StartCoroutine(Blink());
-            }
+            }*/
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)
