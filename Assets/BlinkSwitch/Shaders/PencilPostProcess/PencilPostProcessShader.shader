@@ -47,6 +47,7 @@ Shader "BlinkSwitch/PencilPostProcessShader"
             sampler2D _SourceTexture;
             float _LineStrength;
             float _LineColorStrength;
+            float _SketchLinesStrength;
             sampler2D _CameraDepthTexture;
 
             float4x4 _MainLightDirectionMatrix;
@@ -86,7 +87,7 @@ Shader "BlinkSwitch/PencilPostProcessShader"
 
                 float sketchColorResult = 1.0f - lerp(sketch1, sketch2, 1.0f - smoothstep(0.0f, _Sketch1Threshold, lerpValue));
 
-                float4 result = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), float4(0.2f, 0.2f, 0.2f, 1.0f), lerpValue * sketchColorResult);
+                float4 result = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), float4(0.2f, 0.2f, 0.2f, 1.0f), lerpValue * sketchColorResult * _SketchLinesStrength);
                 result = lerp(result, sketchScreenSpace, step(_ProjectionParams.z - 1.0f, cameraDepth));
                 float lineColorStrength = 1.0f - _LineColorStrength;
                 result = lerp(float4(lineColorStrength, lineColorStrength, lineColorStrength, 1.0f), result, (1.0f - pencilValue.r * sketchColorResult * _LineStrength) );

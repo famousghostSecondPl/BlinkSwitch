@@ -24,6 +24,7 @@ namespace BlinkSwitch
         public bool UseDoubleDOG;
         public Texture SketchTexture;
         public float LineStrength;
+        public float SketchLinesStrength;
         [Range(0.0f, 1.0f)]
         public float LineColorStrength;
         public float Sketch1LineSize;

@@ -2,7 +2,6 @@ namespace BlinkSwitch
 {
     using System.Runtime.CompilerServices;
     using UnityEngine;
-    using UnityEngine.Experimental.GlobalIllumination;
 
     public sealed class SketchDrawingEffect : IPostProcessEffect
     {
@@ -36,6 +35,7 @@ namespace BlinkSwitch
             Graphics.Blit(source, _GaussianBlurTexture2, _GaussianBlurMaterial);
 
             Graphics.Blit(null, _DifferenceOfGaussiansTexture, _DifferenceOfGaussianMaterial);
+            Graphics.Blit(_DifferenceOfGaussiansTexture, _DogSobelFilterTexture, _SobelFilterMaterial);
 
             if (_Settings.UseDoubleDOG)
             {
@@ -47,7 +47,6 @@ namespace BlinkSwitch
                 Graphics.Blit(null, _DifferenceOfGaussiansTexture, _DifferenceOfGaussianMaterial);
             }
 
-            Graphics.Blit(_DifferenceOfGaussiansTexture, _DogSobelFilterTexture, _SobelFilterMaterial);
             _PencilEffectMaterial.SetMatrix(_MainLightDirectionMatrixId, _DirectionalLight.localToWorldMatrix);
             _PencilEffectMaterial.SetTexture(_SourceTextureId, source);
             Graphics.Blit(_DogSobelFilterTexture, _ResultTexture, _PencilEffectMaterial);
@@ -76,6 +75,7 @@ namespace BlinkSwitch
             _PencilEffectMaterial.SetTexture(_DogWithoutSobelFilterTextureId, _DifferenceOfGaussiansTexture);
             _PencilEffectMaterial.SetFloat(_LineStrengthId, _Settings.LineStrength);
             _PencilEffectMaterial.SetFloat(_LineColorStrengthId, _Settings.LineColorStrength);
+            _PencilEffectMaterial.SetFloat(_SketchLinesStrengthId, _Settings.SketchLinesStrength);
         }
 
         public void Refresh()
@@ -126,6 +126,7 @@ namespace BlinkSwitch
         private readonly int _Sketch1ThresholdId = Shader.PropertyToID("_Sketch1Threshold");
         private readonly int _SketchSkyStrengthId = Shader.PropertyToID("_SketchSkyStrength");
         private readonly int _SketchSkyTextureSizeId = Shader.PropertyToID("_SketchSkyTextureSize");
+        private readonly int _SketchLinesStrengthId = Shader.PropertyToID("_SketchLinesStrength");
         #endregion Private Variables
 
         #region Private Methods
