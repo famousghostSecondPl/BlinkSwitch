@@ -42,12 +42,20 @@ Shader "BlinkSwitch/BlinkPostProcess"
 
             sampler2D _PostProcessTexture;
             float _Blink;
+            float _CurveStrength;
+            float _BlurEdgeStrength;
 
             float4 frag (v2f i) : SV_Target
             {
                 float4 col = tex2D(_PostProcessTexture, i.uv);
-                float blink = min(_Blink, 0.6f);
-                col = lerp(col, float4(0.0f, 0.0f, 0.0f, 1.0f), step(1.0f - blink, sin(i.uv.y)) + step(1.0f - blink, sin(1.0f - i.uv.y)));
+                float2 uv = i.uv;
+                uv -= 0.5f;
+                uv = uv - uv * length(uv) * length(uv) * _CurveStrength;
+                uv += 0.5f;
+                const float blink = min(_Blink, 0.6f);
+                const float oneMinusBlink = 1.0f - blink;
+                col = lerp(col, float4(0.0f, 0.0f, 0.0f, 1.0f), 
+                           smoothstep(oneMinusBlink, oneMinusBlink + _BlurEdgeStrength, uv.y) + smoothstep(oneMinusBlink, oneMinusBlink + _BlurEdgeStrength, 1.0f - uv.y));
                 return col;
             }
             ENDCG

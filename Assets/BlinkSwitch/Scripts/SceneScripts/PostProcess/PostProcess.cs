@@ -1,10 +1,8 @@
 namespace BlinkSwitch
 {
     using System.Collections;
-    using System.Runtime.CompilerServices;
     using UnityEngine;
     using UnityEngine.InputSystem;
-    using UnityEngine.Profiling;
 
     public sealed class PostProcess : MonoBehaviour
     {
@@ -27,6 +25,8 @@ namespace BlinkSwitch
         [SerializeField] private Material _BlinkMaterial;
         [Range(0.01f, 0.1f)]
         [SerializeField] private float _BlinkingSpeed = 0.01f;
+        [SerializeField] private float _BlurEdgeStrength = 0.05f;
+        [SerializeField] private float _CurveStrength = 0.3f;
 
         [Header("Blood Shader")]
         [SerializeField] private PlayerStats _PlayerStats;
@@ -64,10 +64,10 @@ namespace BlinkSwitch
 
         private void Update()
         {
-            /*if (PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
+            if (PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
             {
                 StartCoroutine(Blink());
-            }*/
+            }
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -82,7 +82,8 @@ namespace BlinkSwitch
             _BlinkMaterial.SetFloat(_BlinkId, _BlinkValue);
             _BlinkMaterial.SetInt(_PlayersAmountId, BlinkSwitchInstance.Instance.PlayersAmount);
             _BlinkMaterial.SetInt(_PlayerIndexId, PlayerInput.playerIndex);
-            
+            _BlinkMaterial.SetFloat(_BlurEdgeStrengthId, _BlurEdgeStrength);
+            _BlinkMaterial.SetFloat(_CurveStrengthId, _CurveStrength);
             if (_BlurStrength > 0.0f)
             {
                 Graphics.Blit(source, _EyeBlurResult, _BlinkMaterial);
@@ -119,6 +120,8 @@ namespace BlinkSwitch
         private readonly int _PostProcessTextureId = Shader.PropertyToID("_PostProcessTexture");
 
         private readonly int _BlinkId = Shader.PropertyToID("_Blink");
+        private readonly int _BlurEdgeStrengthId = Shader.PropertyToID("_BlurEdgeStrength");
+        private readonly int _CurveStrengthId = Shader.PropertyToID("_CurveStrength");
 
         //Blood Texture Screen space after getting damage
         //float _DamageIndicator;
