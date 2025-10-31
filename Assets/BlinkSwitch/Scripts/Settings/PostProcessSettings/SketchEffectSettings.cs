@@ -5,6 +5,13 @@ namespace BlinkSwitch
     [CreateAssetMenu(fileName = "SketchEffectSettings", menuName = "BlinkSwitch/SketchEffectSettings")]
     public class SketchEffectSettings : ScriptableObject
     {
+        [Header("Outline settings")]
+        public bool EnableOutline;
+        public int OutlineTextureSize;
+        public float OutlineDepthThreshold;
+        public float OutlineNormalThreshold;
+        public float OutlineSize;
+
         [Header("Difference of gaussians params")]
         public int GaussianTextureSize;
         public int GaussianBlurStep;

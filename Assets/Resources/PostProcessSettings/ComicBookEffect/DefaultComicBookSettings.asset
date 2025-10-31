@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DefaultComicBookSettings
   m_EditorClassIdentifier: 
   OutlineTextureSize: 1024
-  OutlineDepthThreshold: 0.05
+  OutlineDepthThreshold: 0.04
   OutlineNormalThreshold: 0.01
   OutlineSize: 2
   PixelSize: 4

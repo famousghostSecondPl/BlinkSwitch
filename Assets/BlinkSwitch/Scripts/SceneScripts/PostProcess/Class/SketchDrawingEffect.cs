@@ -1,6 +1,5 @@
 namespace BlinkSwitch
 {
-    using System.Runtime.CompilerServices;
     using UnityEngine;
 
     public sealed class SketchDrawingEffect : IPostProcessEffect
@@ -15,12 +14,14 @@ namespace BlinkSwitch
             _DifferenceOfGaussianMaterial = new Material(Shader.Find("BlinkSwitch/DifferenceOfGaussiansPostProcessShader"));
             _GaussianBlurMaterial = new Material(Shader.Find("BlinkSwitch/GaussianBlurPostProcessEffect"));
             _PencilEffectMaterial = new Material(Shader.Find("BlinkSwitch/PencilPostProcessShader"));
+            _OutlineMaterial = new Material(Shader.Find("BlinkSwitch/OutlineShader"));
             InitTextures();
         }
 
         public RenderTexture GeneratePostProcess(RenderTexture source)
         {
-            if(_GaussianBlurTexture1 == null || 
+            if(_OutlineTexture == null ||
+                _GaussianBlurTexture1 == null || 
                _GaussianBlurTexture2 == null ||
                _DifferenceOfGaussiansTexture == null ||
                _DogSobelFilterTexture == null ||
@@ -47,6 +48,18 @@ namespace BlinkSwitch
                 Graphics.Blit(null, _DifferenceOfGaussiansTexture, _DifferenceOfGaussianMaterial);
             }
 
+            if (_Settings.EnableOutline)
+            {
+                Graphics.Blit(_DogSobelFilterTexture, _OutlineTexture, _OutlineMaterial);
+            }
+            if (_Settings.EnableOutline)
+            {
+                _PencilEffectMaterial.SetTexture(_OutlineTextureId, _OutlineTexture);
+            }
+            else
+            {
+                _PencilEffectMaterial.SetTexture(_OutlineTextureId, Texture2D.whiteTexture);
+            }
             _PencilEffectMaterial.SetMatrix(_MainLightDirectionMatrixId, _DirectionalLight.localToWorldMatrix);
             _PencilEffectMaterial.SetTexture(_SourceTextureId, source);
             Graphics.Blit(_DogSobelFilterTexture, _ResultTexture, _PencilEffectMaterial);
@@ -55,6 +68,10 @@ namespace BlinkSwitch
         }
         public void Setup()
         {
+            _OutlineMaterial.SetFloat(_OutlineDepthThresholdId, _Settings.OutlineDepthThreshold);
+            _OutlineMaterial.SetFloat(_OutlineNormalThresholdId, _Settings.OutlineNormalThreshold);
+            _OutlineMaterial.SetFloat(_OutlineSizeId, _Settings.OutlineSize);
+
             _GaussianBlurMaterial.SetInt(_GaussianBlurStepsId, _Settings.GaussianBlurStep);
             _GaussianBlurMaterial.SetFloat(_GaussianBlurStrengthId, _Settings.GaussianBlurStrength);
 
@@ -95,13 +112,21 @@ namespace BlinkSwitch
         private Material _DifferenceOfGaussianMaterial;
         private Material _GaussianBlurMaterial;
         private Material _PencilEffectMaterial;
+        private Material _OutlineMaterial;
 
         //Textures
+        private RenderTexture _OutlineTexture;
         private RenderTexture _GaussianBlurTexture1;
         private RenderTexture _GaussianBlurTexture2;
         private RenderTexture _DifferenceOfGaussiansTexture;
         private RenderTexture _DogSobelFilterTexture;
         private RenderTexture _ResultTexture;
+
+        //Outline shader
+        private readonly int _OutlineDepthThresholdId = Shader.PropertyToID("_OutlineDepthThreshold");
+        private readonly int _OutlineNormalThresholdId = Shader.PropertyToID("_OutlineNormalThreshold");
+        private readonly int _OutlineSizeId = Shader.PropertyToID("_OutlineSize");
+        private readonly int _OutlineTextureId = Shader.PropertyToID("_OutlineTexture");
 
         private readonly int _GaussianBlurTexture1Id = Shader.PropertyToID("_GaussianBlurTexture1");
         private readonly int _GaussianBlurTexture2Id = Shader.PropertyToID("_GaussianBlurTexture2");
@@ -132,12 +157,15 @@ namespace BlinkSwitch
         #region Private Methods
         private void InitTextures()
         {
+            TextureUtilities.ReleaseTexture(_OutlineTexture);
             TextureUtilities.ReleaseTexture(_GaussianBlurTexture1);
             TextureUtilities.ReleaseTexture(_GaussianBlurTexture2);
             TextureUtilities.ReleaseTexture(_DifferenceOfGaussiansTexture);
             TextureUtilities.ReleaseTexture(_DogSobelFilterTexture);
             TextureUtilities.ReleaseTexture(_ResultTexture);
 
+            _OutlineTexture =
+                TextureUtilities.CreateTextureBilinearClamp(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, _Camera.depth);
             _GaussianBlurTexture1 =
                 TextureUtilities.CreateTextureBilinearClamp(_Settings.GaussianTextureSize, _Settings.GaussianTextureSize, _Camera.depth);
             _GaussianBlurTexture2 = 
