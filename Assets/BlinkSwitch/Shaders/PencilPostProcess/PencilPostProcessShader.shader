@@ -83,7 +83,7 @@ Shader "BlinkSwitch/PencilPostProcessShader"
                 float dogValue = tex2D(_DogWithoutFilterTexture, i.uv).r;
                 float sketch1 = tex2D(_SketchTexture, lightUv * _Sketch1LineSize).r;
                 float sketch2 = tex2D(_SketchTexture, (lightUv + float2(0.8f, 0.2f)) * _Sketch2LineSize).r;
-                float4 sketchScreenSpace = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), tex2D(_SketchTexture, rayDirection * _SketchSkyTextureSize) * _SketchSkyStrength, step(0.001f, _SketchSkyStrength));
+                float4 sketchScreenSpace = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), tex2D(_SketchTexture, lightUv * _SketchSkyTextureSize) * _SketchSkyStrength, step(0.001f, _SketchSkyStrength));
                 float lerpValue = 1.0f - dogValue;
 
                 float sketchColorResult = 1.0f - lerp(sketch1, sketch2, 1.0f - smoothstep(0.0f, _Sketch1Threshold, lerpValue));

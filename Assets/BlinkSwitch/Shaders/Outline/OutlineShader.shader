@@ -63,50 +63,59 @@ Shader "BlinkSwitch/OutlineShader"
                 float leftTopDepth;
                 float3 leftTopNormal;
                 DecodeDepthNormal(leftTopDepthNormal, leftTopDepth, leftTopNormal);
+                float leftTopDepth01 = LinearEyeDepth(leftTopDepth);
 
                 float4 leftDepthNormal = tex2D(_CameraDepthNormalsTexture, uvLeft);
                 float leftDepth;
                 float3 leftNormal;
                 DecodeDepthNormal(leftDepthNormal, leftDepth, leftNormal);
+                float leftDepth01 = LinearEyeDepth(leftDepth);
 
                 float4 leftBottomDepthNormal = tex2D(_CameraDepthNormalsTexture, uvLeftBot);
                 float leftBottomDepth;
                 float3 leftBottomNormal;
                 DecodeDepthNormal(leftBottomDepthNormal, leftBottomDepth, leftBottomNormal);
+                float leftBottomDepth01 = LinearEyeDepth(leftBottomDepth);
 
                 float4 rightTopDepthNormal = tex2D(_CameraDepthNormalsTexture, uvRightTop);
                 float rightTopDepth;
                 float3 rightTopNormal;
                 DecodeDepthNormal(rightTopDepthNormal, rightTopDepth, rightTopNormal);
+                float rightTopDepth01 = LinearEyeDepth(rightTopDepth);
                 
                 float4 rightDepthNormal = tex2D(_CameraDepthNormalsTexture, uvRight);
                 float rightDepth;
                 float3 rightNormal;
                 DecodeDepthNormal(rightDepthNormal, rightDepth, rightNormal);
+                float rightDepth01 = LinearEyeDepth(rightDepth);
 
                 float4 rightBottomDepthNormal = tex2D(_CameraDepthNormalsTexture, uvRightBot);
                 float rightBottomDepth;
                 float3 rightBottomNormal;
                 DecodeDepthNormal(rightBottomDepthNormal, rightBottomDepth, rightBottomNormal);
+                float rightBottomDepth01 = LinearEyeDepth(rightBottomDepth);
 
                 float4 topDepthNormal = tex2D(_CameraDepthNormalsTexture, uvTop);
                 float topDepth;
                 float3 topNormal;
                 DecodeDepthNormal(topDepthNormal, topDepth, topNormal);
+                float topDepth01 = LinearEyeDepth(topDepth);
 
                 float4 bottomDepthNormal = tex2D(_CameraDepthNormalsTexture, uvBot);
                 float bottomDepth;
                 float3 bottomNormal;
                 DecodeDepthNormal(bottomDepthNormal, bottomDepth, bottomNormal);
+                float bottomDepth01 = LinearEyeDepth(bottomDepth);
     
                 float4 centerDepthNormal = tex2D(_CameraDepthNormalsTexture, centerUv);
                 float centerDepth;
                 float3 centerNormal;
                 DecodeDepthNormal(centerDepthNormal, centerDepth, centerNormal);
+                float centerDepth01 = LinearEyeDepth(centerDepth);
                 float2 normalSobel = float2(dot(centerNormal, leftTopNormal * -1.0f + leftNormal * -2.0f + leftBottomNormal * -1.0f + rightTopNormal + rightNormal * 2.0f + rightBottomNormal), 
-                            dot(centerNormal, leftTopNormal * -1.0f + topNormal * -2.0f + rightTopNormal * -1.0f + leftBottomNormal + bottomNormal * 2.0f + rightBottomNormal));
-                float2 depthSobel = float2((leftTopDepth * -1.0f + leftDepth * -2.0f + leftDepth * -1.0f + rightTopDepth + rightDepth * 2.0f + rightBottomDepth), 
-                                           (leftTopDepth * -1.0f + topDepth * -2.0f + rightDepth * -1.0f + leftBottomDepth + bottomDepth * 2.0f + rightBottomDepth));
+                            dot(centerNormal, leftTopNormal + topNormal * 2.0f + rightTopNormal + leftBottomNormal * -1.0f + bottomNormal * -2.0f + rightBottomNormal * -1.0f));
+                float2 depthSobel = float2((leftTopDepth01 * -1.0f + leftDepth01 * -2.0f + leftBottomDepth01 * -1.0f + rightTopDepth01 + rightDepth01 * 2.0f + rightBottomDepth01), 
+                                           (leftTopDepth01 + topDepth01 * 2.0f + rightTopDepth01 * 1.0f + leftBottomDepth01 * -1.0f + bottomDepth01 * -2.0f + rightBottomDepth01 * -1.0f));
                 return float4(normalSobel, depthSobel);
             }
 
@@ -119,7 +128,8 @@ Shader "BlinkSwitch/OutlineShader"
                 float centerDepth;
                 float3 centerNormal;
                 DecodeDepthNormal(centerDepthNormal, centerDepth, centerNormal);
-                return (1.0f - step(_OutlineNormalThreshold, length(normalSobel))) * (1.0f - step(_OutlineDepthThreshold, length(depthSobel)));
+                float centerDepth01 = LinearEyeDepth(centerDepth);
+                return (1.0f - step(_OutlineNormalThreshold, length(normalSobel))) * (1.0f - step(_OutlineDepthThreshold, length(depthSobel) - centerDepth01));
             }
 
             float CalculateOutline(float2 uv, float2 resolution)
