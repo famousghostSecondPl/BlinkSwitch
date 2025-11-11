@@ -112,8 +112,8 @@ Shader "BlinkSwitch/OutlineShader"
                 float3 centerNormal;
                 DecodeDepthNormal(centerDepthNormal, centerDepth, centerNormal);
                 float centerDepth01 = centerDepth;
-                float2 normalSobel = float2(length(leftTopNormal * -1.0f + leftNormal * -2.0f + leftBottomNormal * -1.0f + rightTopNormal + rightNormal * 2.0f + rightBottomNormal), 
-                            length(leftTopNormal + topNormal * 2.0f + rightTopNormal + leftBottomNormal * -1.0f + bottomNormal * -2.0f + rightBottomNormal * -1.0f));
+                float2 normalSobel = float2(dot(centerNormal, leftTopNormal * -1.0f + leftNormal * -2.0f + leftBottomNormal * -1.0f + rightTopNormal + rightNormal * 2.0f + rightBottomNormal), 
+                            dot(centerNormal, leftTopNormal + topNormal * 2.0f + rightTopNormal + leftBottomNormal * -1.0f + bottomNormal * -2.0f + rightBottomNormal * -1.0f));
                 float2 depthSobel = float2((leftTopDepth01 * -1.0f + leftDepth01 * -2.0f + leftBottomDepth01 * -1.0f + rightTopDepth01 + rightDepth01 * 2.0f + rightBottomDepth01), 
                                            (leftTopDepth01 + topDepth01 * 2.0f + rightTopDepth01 * 1.0f + leftBottomDepth01 * -1.0f + bottomDepth01 * -2.0f + rightBottomDepth01 * -1.0f));
                 return float4(normalSobel.x, normalSobel.y, depthSobel * 1.2f);
