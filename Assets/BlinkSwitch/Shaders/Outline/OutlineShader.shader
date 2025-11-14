@@ -116,7 +116,7 @@ Shader "BlinkSwitch/OutlineShader"
                             dot(centerNormal, leftTopNormal + topNormal * 2.0f + rightTopNormal + leftBottomNormal * -1.0f + bottomNormal * -2.0f + rightBottomNormal * -1.0f));
                 float2 depthSobel = float2((leftTopDepth01 * -1.0f + leftDepth01 * -2.0f + leftBottomDepth01 * -1.0f + rightTopDepth01 + rightDepth01 * 2.0f + rightBottomDepth01), 
                                            (leftTopDepth01 + topDepth01 * 2.0f + rightTopDepth01 * 1.0f + leftBottomDepth01 * -1.0f + bottomDepth01 * -2.0f + rightBottomDepth01 * -1.0f));
-                return float4(normalSobel.x, normalSobel.y, depthSobel * 1.2f);
+                return float4(normalSobel.x, normalSobel.y, depthSobel);
             }
 
             float CalculateOutlineSobel(sampler2D tex, float2 pixelCoord, float2 resolution)
@@ -132,13 +132,12 @@ Shader "BlinkSwitch/OutlineShader"
                 const float depthResult = length(depthSobel) - centerDepth;
 
                 return saturate(1.0f - (step(_OutlineNormalThreshold, normResult)
-                       + step(_OutlineDepthThreshold, depthResult)));
+                                        + step(_OutlineDepthThreshold, depthResult)));
             }
 
             float4 frag (v2f i) : SV_Target
             {
                 float4 col = tex2D(_MainTex, i.uv);
-                //float outline = CalculateOutline(i.uv, _ScreenParams.xy);
                 float outline = CalculateOutlineSobel(_CameraDepthNormalsTexture, i.uv * _ScreenParams.xy, _ScreenParams.xy);
                 return float4(outline, outline, outline, 1.0f);
             }

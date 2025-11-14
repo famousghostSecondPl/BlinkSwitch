@@ -14,19 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnableOutline: 1
   OutlineTextureSize: 1024
-  OutlineDepthThreshold: 0
+  OutlineDepthThreshold: 0.9
   OutlineNormalThreshold: 0.01
   OutlineSize: 2
   GaussianTextureSize: 2048
   GaussianBlurStep: 4
   GaussianBlurStrength: 1
   Sigma: 11
-  Threshold: 0.6
-  UParam: 2
+  Threshold: 0.4
+  UParam: 2.48
   GaussianBlurSigma1: 0.9
-  GaussianBlurSigma2: 1.03
-  SobelFilterSize: 1
-  UseDoubleDOG: 1
+  GaussianBlurSigma2: 1.05
+  SobelFilterSize: 0.23
+  UseDoubleDOG: 0
   SketchTexture: {fileID: 2800000, guid: 68ebbfec02bb15b4b8b46d89cfef7ed4, type: 3}
   LineStrength: 0.8
   SketchLinesStrength: 4
