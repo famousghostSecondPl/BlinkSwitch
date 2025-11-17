@@ -86,24 +86,30 @@ namespace BlinkSwitch
         {
             _PlayerStartPoints = FindObjectsByType<PlayerSpawn>(FindObjectsSortMode.None).ToList();
             int randomIndex = Random.Range(0, _PlayerStartPoints.Count - 1);
-            transform.position = _PlayerStartPoints[randomIndex].StartPostion;
-            transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
+            if (_PlayerStartPoints != null && _PlayerStartPoints.Count != 0)
+            {
+                transform.position = _PlayerStartPoints[randomIndex].StartPostion;
+                transform.rotation = _PlayerStartPoints[randomIndex].StartRotation;
+            }
             PlayerState = new PlayerIdle();
             Body = GetComponent<Rigidbody>();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             MainCamera = PlayerInput.camera;
-            CurrentWeapon = _Weapons[0];
-            _WeaponIndex = 0;
-            for(int i = 0; i < 3; ++i)
+            if (_Weapons.Count > 0)
             {
-                if(i == _WeaponIndex)
+                CurrentWeapon = _Weapons[0];
+                _WeaponIndex = 0;
+                for(int i = 0; i < _Weapons.Count; ++i)
                 {
-                    continue;
+                    if(i == _WeaponIndex)
+                    {
+                        continue;
+                    }
+                    _Weapons[i].GetComponent<MeshRenderer>().enabled = false;
                 }
-                _Weapons[i].GetComponent<MeshRenderer>().enabled = false;
+                _Weapons[_WeaponIndex].GetComponent<MeshRenderer>().enabled = true;
             }
-            _Weapons[_WeaponIndex].GetComponent<MeshRenderer>().enabled = true;
         }
 
 
@@ -122,19 +128,22 @@ namespace BlinkSwitch
                 PlayerState = new PlayerIdle();
             }
             SwitchWeapon();
-            Vector2Int ammo = CurrentWeapon.GetCurrentAmmo();
-            if (ammo != null)
+            if (CurrentWeapon != null)
             {
-                _Stats.CurrentAmmoInMagazine = ammo.x;
-                _Stats.CurrentAmmoInWeapon = ammo.y;
+                Vector2Int ammo = CurrentWeapon.GetCurrentAmmo();
+                if (ammo != null)
+                {
+                    _Stats.CurrentAmmoInMagazine = ammo.x;
+                    _Stats.CurrentAmmoInWeapon = ammo.y;
+                }
+                CurrentWeapon.Fire(
+                    PlayerInput,
+                    MainCamera.transform.rotation,
+                    MainCamera.transform.position + MainCamera.transform.forward * 1.5f,
+                    MainCamera.transform.forward);
+                CurrentWeapon.UpdateFire();
+                _Stats.IsReloading = CurrentWeapon.Reload(PlayerInput);
             }
-            CurrentWeapon.Fire(
-                PlayerInput, 
-                MainCamera.transform.rotation, 
-                MainCamera.transform.position + MainCamera.transform.forward * 1.5f, 
-                MainCamera.transform.forward);
-            CurrentWeapon.UpdateFire();
-            _Stats.IsReloading = CurrentWeapon.Reload(PlayerInput);
             Rotate();
             PlayerState = PlayerState.GetState(this);
             PlayerState.Update(this);
@@ -168,7 +177,8 @@ namespace BlinkSwitch
             int previousWeaponIndex = _WeaponIndex;
             if (_Weapons.Count < 3)
             {
-                Debug.LogError("[PlayerController]: Forget to add all weapon prefabs to player prefab");
+                // Debug.LogError("[PlayerController]: Forget to add all weapon prefabs to player prefab");
+                return;
             }
             if (PlayerInput.actions["Weapon1"].WasPressedThisFrame())
             {
