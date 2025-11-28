@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6fec13d2da237c4d98a1594ecc35197, type: 3}
   m_Name: DefaultComicBookSettings
   m_EditorClassIdentifier: 
-  OutlineTextureSize: 2048
+  OutlineTextureSize: 1024
   OutlineDepthThreshold: 0.001
   OutlineNormalThreshold: 0.99
   OutlineSize: 2

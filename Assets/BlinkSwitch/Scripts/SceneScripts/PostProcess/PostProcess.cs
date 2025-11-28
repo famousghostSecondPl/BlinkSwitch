@@ -1,8 +1,16 @@
 namespace BlinkSwitch
 {
+    using NUnit.Framework.Constraints;
     using System.Collections;
     using UnityEngine;
     using UnityEngine.InputSystem;
+
+    public enum AntiAliasingType
+    { 
+        FXAA = 0,
+        TAA = 1,
+        SMAA = 2, // Supported only by Forward rendering
+    }
 
     public sealed class PostProcess : MonoBehaviour
     {
@@ -32,6 +40,13 @@ namespace BlinkSwitch
         [SerializeField] private PlayerStats _PlayerStats;
         [SerializeField] private Material _DamageMaterial;
         [SerializeField] private Texture _ScreenSpaceBloodTexture;
+
+        [Header("Anti Aliasing")]
+        [SerializeField] private AntiAliasingType _AntiAliasingType;
+        [SerializeField] private Material _TemporaryAntiAliasingMaterial;
+
+        [Header("G-Buffer")]
+        [SerializeField] private Material _WorldPosFromDepthMaterial;
         #endregion Inspector Variables
 
         #region Public Variables
@@ -40,6 +55,11 @@ namespace BlinkSwitch
         #endregion Public Variables
 
         #region Unity Methods
+
+        private void Awake()
+        {
+            _FrameNumber = 0;
+        }
 
         private void Start()
         {
@@ -59,19 +79,50 @@ namespace BlinkSwitch
             _EyeBlurResult = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
             _HorizontalBlurResultTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
             _DamageTextureResult = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
+            _PreviousFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.Default, false);
+            _CurrentFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.Default, false);
+            _TemporaryFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.Default, false);
+            _WorldPosFromDepthTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
             _PostProcessIndex = _PostProcessIndex = Random.Range(0, _PostProcessCount * 100) / 100;
+
         }
 
         private void Update()
         {
+
             if (PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
             {
                 StartCoroutine(Blink());
             }
+
+        }
+
+        private void OnPreCull()
+        {
+            if(_AntiAliasingType == AntiAliasingType.TAA)
+            {
+                Vector2 currentJitterOffset = GenerateJitter(_FrameNumber);
+                var projectionMatrix = PlayerCamera.projectionMatrix;
+                projectionMatrix.m02 += currentJitterOffset.x * 2.0f;
+                projectionMatrix.m12 += currentJitterOffset.y * 2.0f;
+                PlayerCamera.projectionMatrix = projectionMatrix;
+            }
+        }
+
+        private void OnPostRender()
+        {
+            PlayerCamera.ResetProjectionMatrix();
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
+            if(_FrameNumber == 0)
+            {
+                Graphics.Blit(source, _PreviousFrameTexture);
+                Graphics.Blit(source, _CurrentFrameTexture);
+            }
+            PlayerCamera.ResetProjectionMatrix();
+            Graphics.Blit(source, _WorldPosFromDepthTexture, _WorldPosFromDepthMaterial);
             _DamageMaterial.SetFloat(_DamageIndicatorId, _PlayerStats.DamageIndicator);
             _DamageMaterial.SetTexture(_ScreenSpaceBloodTextureId, _ScreenSpaceBloodTexture);
             Graphics.Blit(source, _DamageTextureResult, _DamageMaterial);
@@ -84,6 +135,7 @@ namespace BlinkSwitch
             _BlinkMaterial.SetInt(_PlayerIndexId, PlayerInput.playerIndex);
             _BlinkMaterial.SetFloat(_BlurEdgeStrengthId, _BlurEdgeStrength);
             _BlinkMaterial.SetFloat(_CurveStrengthId, _CurveStrength);
+
             if (_BlurStrength > 0.0f)
             {
                 Graphics.Blit(source, _EyeBlurResult, _BlinkMaterial);
@@ -92,12 +144,31 @@ namespace BlinkSwitch
                 _VerticalBlurMaterial.SetFloat(_BlurStrengthId, _BlurStrength);
                 _VerticalBlurMaterial.SetInt(_BlurStepsId, _BlurSteps);
                 Graphics.Blit(_EyeBlurResult, _HorizontalBlurResultTexture, _HorizontalBlurMaterial);
-                Graphics.Blit(_HorizontalBlurResultTexture, destination, _VerticalBlurMaterial);
+                Graphics.Blit(_HorizontalBlurResultTexture, _CurrentFrameTexture, _VerticalBlurMaterial);
             }
             else
             {
-                Graphics.Blit(source, destination, _BlinkMaterial);
+                Graphics.Blit(source, _CurrentFrameTexture, _BlinkMaterial);
             }
+            if (_AntiAliasingType == AntiAliasingType.TAA)
+            {
+                _PreviousProjectionMatrix = PlayerCamera.projectionMatrix;
+                _PreviousViewMatrix = PlayerCamera.worldToCameraMatrix;
+                _TemporaryAntiAliasingMaterial.SetMatrix(_PreviousInverseVPMatrixId, GL.GetGPUProjectionMatrix(_PreviousProjectionMatrix, false) * _PreviousViewMatrix);
+                _TemporaryAntiAliasingMaterial.SetTexture(_PreviousFrameTextureId, _PreviousFrameTexture);
+                _TemporaryAntiAliasingMaterial.SetTexture(_WorldPosTextureFromDepthId, _WorldPosFromDepthTexture);
+                Graphics.Blit(_CurrentFrameTexture, _TemporaryFrameTexture, _TemporaryAntiAliasingMaterial);
+                Graphics.Blit(_TemporaryFrameTexture, _PreviousFrameTexture);
+                Graphics.Blit(_TemporaryFrameTexture, destination);
+               // _PreviousProjectionMatrix = PlayerCamera.projectionMatrix;
+               // _PreviousViewMatrix = PlayerCamera.worldToCameraMatrix;
+            }
+            else
+            {
+                //TODO: add anti aliasing algorithms (at least FXAA)
+                Graphics.Blit(_CurrentFrameTexture, destination);
+            }
+            _FrameNumber++;
         }
         #endregion Unity Methhods
 
@@ -116,6 +187,10 @@ namespace BlinkSwitch
         //Merged Shader
         private RenderTexture _EyeBlurResult;
         private RenderTexture _DamageTextureResult;
+        private RenderTexture _PreviousFrameTexture;
+        private RenderTexture _CurrentFrameTexture;
+        private RenderTexture _TemporaryFrameTexture;
+        private RenderTexture _WorldPosFromDepthTexture;
 
         private readonly int _PostProcessTextureId = Shader.PropertyToID("_PostProcessTexture");
 
@@ -123,11 +198,17 @@ namespace BlinkSwitch
         private readonly int _BlurEdgeStrengthId = Shader.PropertyToID("_BlurEdgeStrength");
         private readonly int _CurveStrengthId = Shader.PropertyToID("_CurveStrength");
 
-        //Blood Texture Screen space after getting damage
-        //float _DamageIndicator;
-        //sampler2D _ScreenSpaceBloodTexture;
         private readonly int _DamageIndicatorId = Shader.PropertyToID("_DamageIndicator");
         private readonly int _ScreenSpaceBloodTextureId = Shader.PropertyToID("_ScreenSpaceBloodTexture");
+
+        //TAA
+        private readonly int _PreviousInverseVPMatrixId = Shader.PropertyToID("_PreviousInverseVPMatrix");
+        private readonly int _PreviousFrameTextureId = Shader.PropertyToID("_PreviousFrameTexture");
+        private readonly int _WorldPosTextureFromDepthId = Shader.PropertyToID("_WorldPosFromDepthTexture");
+        private Matrix4x4 _PreviousProjectionMatrix;
+        private Matrix4x4 _PreviousViewMatrix;
+
+        private int _FrameNumber;
 
         private float _BlinkValue;
         private int _PostProcessIndex;
@@ -182,6 +263,32 @@ namespace BlinkSwitch
                 yield return new WaitForSeconds(_BlurSpeedInSeconds);
             }
         }
+
+        //Unrea and Unity by default uses this algorithm
+        float Halton(int index, int baseValue)
+        {
+            float result = 0f;
+            float fraction = 1f / baseValue;
+
+            while (index > 0)
+            {
+                result += (index % baseValue) * fraction;
+                index /= baseValue;
+                fraction /= baseValue;
+            }
+
+            return result;
+        }
+
+        Vector2 GenerateJitter(int frame)
+        {
+            float x = Halton(frame % 1024, 2) - 0.5f;
+            float y = Halton(frame % 1024, 3) - 0.5f;
+
+            return new Vector2(x / PlayerCamera.pixelWidth,
+                               y / PlayerCamera.pixelHeight);
+        }
+
         #endregion Private Methods
     }
 }

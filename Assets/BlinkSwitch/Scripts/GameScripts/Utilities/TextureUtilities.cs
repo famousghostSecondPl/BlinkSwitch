@@ -14,7 +14,7 @@ namespace BlinkSwitch
             texture = null;
         }
 
-        public static RenderTexture CreateTextureClampPoint(int width, int height, float depth, bool supportMipMaps = true)
+        public static RenderTexture CreateTextureClampPoint(int width, int height, float depth, RenderTextureFormat rtFormat = RenderTextureFormat.Default, bool supportMipMaps = true)
         {
             RenderTexture result = new RenderTexture(width, height, (int)depth)
             {
@@ -22,13 +22,14 @@ namespace BlinkSwitch
                 filterMode = FilterMode.Point,
                 enableRandomWrite = true,
                 autoGenerateMips = supportMipMaps,
-                useMipMap = supportMipMaps
+                useMipMap = supportMipMaps,
+                format = rtFormat
             };
             result.Create();
             return result;
         }
 
-        public static RenderTexture CreateTextureBilinearClamp(int width, int height, float depth, bool supportMipMaps = false)
+        public static RenderTexture CreateTextureBilinearClamp(int width, int height, float depth, RenderTextureFormat rtFormat = RenderTextureFormat.Default, bool supportMipMaps = false)
         {
             RenderTexture result = new RenderTexture(width, height, (int)depth)
             {
@@ -36,7 +37,8 @@ namespace BlinkSwitch
                 filterMode = FilterMode.Bilinear,
                 enableRandomWrite = true,
                 autoGenerateMips = supportMipMaps,
-                useMipMap = supportMipMaps
+                useMipMap = supportMipMaps,
+                format = rtFormat
             };
             result.Create();
             return result;

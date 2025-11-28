@@ -115,8 +115,8 @@ namespace BlinkSwitch
             TextureUtilities.ReleaseTexture(_OutlineTexture);
             TextureUtilities.ReleaseTexture(_ResultTexture);
             _OutlineTexture =
-                TextureUtilities.CreateTextureClampPoint(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, 24, false);
-            _ResultTexture = TextureUtilities.CreateTextureBilinearClamp(_Camera.pixelWidth, _Camera.pixelHeight, 24, false);
+                TextureUtilities.CreateTextureClampPoint(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, 24, RenderTextureFormat.Default, false);
+            _ResultTexture = TextureUtilities.CreateTextureBilinearClamp(_Camera.pixelWidth, _Camera.pixelHeight, 24, RenderTextureFormat.Default, false);
             _CustomDepthNormalTexture = new RenderTexture(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, 24)
             {
                 enableRandomWrite = true,
