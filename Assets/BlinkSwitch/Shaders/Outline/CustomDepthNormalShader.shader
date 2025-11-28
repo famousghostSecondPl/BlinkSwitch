@@ -49,11 +49,10 @@ Shader "BlinkSwitch/CustomDepthNormalShader"
             v2f vert (appdata v)
             {
                 v2f o;
-                float4 worldPos = mul(UNITY_MATRIX_M, v.vertex);
-                float4 clipPos = mul(_CustomViewProjectionMatrix, worldPos);
+                float4 clipPos = UnityObjectToClipPos(v.vertex);
                 o.vertex = clipPos;
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                o.normal =  o.normal = normalize(mul(v.normal, unity_WorldToObject));
+                o.normal = mul(unity_ObjectToWorld, v.normal).xyz;
                 o.screenPos = ComputeScreenPos(o.vertex);
                 return o;
             }
@@ -66,7 +65,7 @@ Shader "BlinkSwitch/CustomDepthNormalShader"
                 float4 col = tex2D(_CustomDepthNormalTexture, screenUv);
                 if(currentDepth >= previousDepth)
                 {
-                    col = float4(i.screenPos.z / i.screenPos.w, i.normal * 2.0f - 1.0f);
+                    col = float4(i.screenPos.z / i.screenPos.w, i.normal);
                 }
 
                 return col;

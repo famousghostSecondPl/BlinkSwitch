@@ -22,10 +22,6 @@ namespace BlinkSwitch
             return _ResultTexture;
         }
 
-        public void Update()
-        {
-
-        }
 
         public void Setup()
         {

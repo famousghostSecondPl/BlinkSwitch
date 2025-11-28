@@ -68,8 +68,6 @@ namespace BlinkSwitch
             {
                 StartCoroutine(Blink());
             }
-            _PostProcessEffect = _PostProcessGenerator.GetPostProcessEffectFromId(_PostProcessIndex);
-            _PostProcessEffect.Update();
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)

@@ -16,11 +16,6 @@ namespace BlinkSwitch
             InitTextures();
         }
 
-        public void Update()
-        {
-
-        }
-
         public RenderTexture GeneratePostProcess(RenderTexture source)
         {
             if(_ResultTexture == null || _OutlineTexture == null)
@@ -106,7 +101,6 @@ namespace BlinkSwitch
         private readonly int _OutlineNormalThresholdId = Shader.PropertyToID("_OutlineNormalThreshold");
         private readonly int _OutlineSizeId = Shader.PropertyToID("_OutlineSize");
         private readonly int _CustomDepthNormalTextureId = Shader.PropertyToID("_CustomDepthNormalTexture");
-        private readonly int _CustomViewProjectionMatrixId = Shader.PropertyToID("_CustomViewProjectionMatrix");
 
         //Dithering Shader
         private readonly int _OutlineTextureId = Shader.PropertyToID("_OutlineTexture");
@@ -123,20 +117,20 @@ namespace BlinkSwitch
             _OutlineTexture =
                 TextureUtilities.CreateTextureClampPoint(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, 24, false);
             _ResultTexture = TextureUtilities.CreateTextureBilinearClamp(_Camera.pixelWidth, _Camera.pixelHeight, 24, false);
-            _CustomDepthNormalTexture = new RenderTexture(_Camera.pixelWidth, _Camera.pixelHeight, 24, RenderTextureFormat.ARGBFloat)
+            _CustomDepthNormalTexture = new RenderTexture(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, 24)
             {
                 enableRandomWrite = true,
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Point,
                 autoGenerateMips = false,
-                useMipMap = false
+                useMipMap = false,
+                format = RenderTextureFormat.ARGBFloat
             };
 
         }
 
         private void RenderCustomDepthNormalTexture(GameObject obj, MeshFilter meshFilter)
         {
-            _RenderCustomDepthNormalMaterial.SetMatrix(_CustomViewProjectionMatrixId, GL.GetGPUProjectionMatrix(_Camera.projectionMatrix, true) * _Camera.worldToCameraMatrix);
             _RenderDepthNormlaCommandBuffer.DrawMesh(meshFilter.sharedMesh, obj.transform.localToWorldMatrix, _RenderCustomDepthNormalMaterial);
 
             Graphics.ExecuteCommandBuffer(_RenderDepthNormlaCommandBuffer);

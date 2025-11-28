@@ -1,6 +1,7 @@
 namespace BlinkSwitch
 {
     using UnityEngine;
+    using UnityEngine.Rendering;
 
     public sealed class SketchDrawingEffect : IPostProcessEffect
     {
@@ -15,6 +16,7 @@ namespace BlinkSwitch
             _GaussianBlurMaterial = new Material(Shader.Find("BlinkSwitch/GaussianBlurPostProcessEffect"));
             _PencilEffectMaterial = new Material(Shader.Find("BlinkSwitch/PencilPostProcessShader"));
             _OutlineMaterial = new Material(Shader.Find("BlinkSwitch/OutlineShader"));
+            _RenderCustomDepthNormalMaterial = new Material(Shader.Find("BlinkSwitch/CustomDepthNormalShader"));
             InitTextures();
         }
 
@@ -28,6 +30,32 @@ namespace BlinkSwitch
                _ResultTexture == null)
             {
                 return source;
+            }
+
+
+            if (_RenderCustomDepthNormalMaterial != null && _CustomDepthNormalTexture != null)
+            {
+                Graphics.Blit(Texture2D.blackTexture, _CustomDepthNormalTexture);
+                _RenderDepthNormlaCommandBuffer = new CommandBuffer();
+                _RenderDepthNormlaCommandBuffer.name = "Render Custom Depth Normal buffer";
+                _RenderDepthNormlaCommandBuffer.SetRenderTarget(_CustomDepthNormalTexture);
+                _RenderDepthNormlaCommandBuffer.ClearRenderTarget(true, true, Color.clear);
+                _RenderCustomDepthNormalMaterial.SetTexture(_CustomDepthNormalTextureId, _CustomDepthNormalTexture);
+                Plane[] planes = GeometryUtility.CalculateFrustumPlanes(_Camera);
+
+                foreach (Renderer r in GameObject.FindObjectsByType<Renderer>(sortMode: FindObjectsSortMode.None))
+                {
+                    if (GeometryUtility.TestPlanesAABB(planes, r.bounds))
+                    {
+                        var mf = r.GetComponent<MeshFilter>();
+                        if (r.gameObject != null && mf)
+                        {
+                            RenderCustomDepthNormalTexture(r.gameObject, mf);
+                        }
+                    }
+                }
+                _RenderDepthNormlaCommandBuffer.Dispose();
+                _RenderDepthNormlaCommandBuffer = null;
             }
 
             _GaussianBlurMaterial.SetFloat(_GaussianBlurSigmaId, _Settings.GaussianBlurSigma1);
@@ -66,17 +94,13 @@ namespace BlinkSwitch
 
             return _ResultTexture;
         }
-
-        public void Update()
-        {
-
-        }
         
         public void Setup()
         {
             _OutlineMaterial.SetFloat(_OutlineDepthThresholdId, _Settings.OutlineDepthThreshold);
             _OutlineMaterial.SetFloat(_OutlineNormalThresholdId, _Settings.OutlineNormalThreshold);
             _OutlineMaterial.SetFloat(_OutlineSizeId, _Settings.OutlineSize);
+            _OutlineMaterial.SetTexture(_CustomDepthNormalTextureId, _CustomDepthNormalTexture);
 
             _GaussianBlurMaterial.SetInt(_GaussianBlurStepsId, _Settings.GaussianBlurStep);
             _GaussianBlurMaterial.SetFloat(_GaussianBlurStrengthId, _Settings.GaussianBlurStrength);
@@ -113,12 +137,16 @@ namespace BlinkSwitch
         private Camera _Camera;
         private Transform _DirectionalLight;
 
+        //RenderBuffers
+        CommandBuffer _RenderDepthNormlaCommandBuffer;
+
         //Materials
         private Material _SobelFilterMaterial;
         private Material _DifferenceOfGaussianMaterial;
         private Material _GaussianBlurMaterial;
         private Material _PencilEffectMaterial;
         private Material _OutlineMaterial;
+        private Material _RenderCustomDepthNormalMaterial;
 
         //Textures
         private RenderTexture _OutlineTexture;
@@ -126,6 +154,7 @@ namespace BlinkSwitch
         private RenderTexture _GaussianBlurTexture2;
         private RenderTexture _DifferenceOfGaussiansTexture;
         private RenderTexture _DogSobelFilterTexture;
+        private RenderTexture _CustomDepthNormalTexture;
         private RenderTexture _ResultTexture;
 
         //Outline shader
@@ -133,6 +162,7 @@ namespace BlinkSwitch
         private readonly int _OutlineNormalThresholdId = Shader.PropertyToID("_OutlineNormalThreshold");
         private readonly int _OutlineSizeId = Shader.PropertyToID("_OutlineSize");
         private readonly int _OutlineTextureId = Shader.PropertyToID("_OutlineTexture");
+        private readonly int _CustomDepthNormalTextureId = Shader.PropertyToID("_CustomDepthNormalTexture");
 
         private readonly int _GaussianBlurTexture1Id = Shader.PropertyToID("_GaussianBlurTexture1");
         private readonly int _GaussianBlurTexture2Id = Shader.PropertyToID("_GaussianBlurTexture2");
@@ -182,6 +212,23 @@ namespace BlinkSwitch
                 TextureUtilities.CreateTextureBilinearClamp(_Settings.GaussianTextureSize, _Settings.GaussianTextureSize, _Camera.depth);
 
             _ResultTexture = TextureUtilities.CreateTextureBilinearClamp(_Camera.pixelWidth, _Camera.pixelHeight, _Camera.depth);
+
+            _CustomDepthNormalTexture = new RenderTexture(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, 24)
+            {
+                enableRandomWrite = true,
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Point,
+                autoGenerateMips = false,
+                useMipMap = false,
+                format = RenderTextureFormat.ARGBFloat
+            };
+        }
+
+        private void RenderCustomDepthNormalTexture(GameObject obj, MeshFilter meshFilter)
+        {
+            _RenderDepthNormlaCommandBuffer.DrawMesh(meshFilter.sharedMesh, obj.transform.localToWorldMatrix, _RenderCustomDepthNormalMaterial);
+
+            Graphics.ExecuteCommandBuffer(_RenderDepthNormlaCommandBuffer);
         }
         #endregion Private Methods
     }

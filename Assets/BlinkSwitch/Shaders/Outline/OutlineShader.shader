@@ -91,10 +91,10 @@ Shader "BlinkSwitch/OutlineShader"
                 float normalMagnitude = length(float2(gradNormalX, gradNormalY));
                 float depthMagnitude  = length(float2(gradDepthX, gradDepthY));
 
-                float outline = 1.0f - (step(_OutlineNormalThreshold, normalMagnitude) +
+                float outline = (step(_OutlineNormalThreshold, normalMagnitude) +
                                 step(_OutlineDepthThreshold, depthMagnitude));
 
-                return saturate(outline);
+                return 1.0f - saturate(outline);
             }
 
             float4 frag (v2f i) : SV_Target
