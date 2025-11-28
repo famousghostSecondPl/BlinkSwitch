@@ -14,25 +14,29 @@ namespace BlinkSwitch
             texture = null;
         }
 
-        public static RenderTexture CreateTextureClampPoint(int width, int height, float depth)
+        public static RenderTexture CreateTextureClampPoint(int width, int height, float depth, bool supportMipMaps = true)
         {
             RenderTexture result = new RenderTexture(width, height, (int)depth)
             {
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Point,
-                enableRandomWrite = true
+                enableRandomWrite = true,
+                autoGenerateMips = supportMipMaps,
+                useMipMap = supportMipMaps
             };
             result.Create();
             return result;
         }
 
-        public static RenderTexture CreateTextureBilinearClamp(int width, int height, float depth)
+        public static RenderTexture CreateTextureBilinearClamp(int width, int height, float depth, bool supportMipMaps = false)
         {
             RenderTexture result = new RenderTexture(width, height, (int)depth)
             {
                 wrapMode = TextureWrapMode.Clamp,
                 filterMode = FilterMode.Bilinear,
-                enableRandomWrite = true
+                enableRandomWrite = true,
+                autoGenerateMips = supportMipMaps,
+                useMipMap = supportMipMaps
             };
             result.Create();
             return result;

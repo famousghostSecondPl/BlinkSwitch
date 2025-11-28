@@ -66,6 +66,12 @@ namespace BlinkSwitch
 
             return _ResultTexture;
         }
+
+        public void Update()
+        {
+
+        }
+        
         public void Setup()
         {
             _OutlineMaterial.SetFloat(_OutlineDepthThresholdId, _Settings.OutlineDepthThreshold);

@@ -21,6 +21,12 @@ namespace BlinkSwitch
             Graphics.Blit(source, _ResultTexture, _InvertScreenMaterial);
             return _ResultTexture;
         }
+
+        public void Update()
+        {
+
+        }
+
         public void Setup()
         {
             //intentionally left empty

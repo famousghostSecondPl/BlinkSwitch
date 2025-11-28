@@ -16,7 +16,7 @@ MonoBehaviour:
   OutlineTextureSize: 1024
   OutlineDepthThreshold: 0
   OutlineNormalThreshold: 0.01
-  OutlineSize: 2
+  OutlineSize: 3
   GaussianTextureSize: 2048
   GaussianBlurStep: 4
   GaussianBlurStrength: 1

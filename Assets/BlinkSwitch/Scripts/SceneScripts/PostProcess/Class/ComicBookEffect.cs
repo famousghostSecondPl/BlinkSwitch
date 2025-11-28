@@ -1,6 +1,7 @@
 namespace BlinkSwitch
 {
     using UnityEngine;
+    using UnityEngine.Rendering;
 
     public sealed class ComicBookEffect : IPostProcessEffect
     {
@@ -11,7 +12,13 @@ namespace BlinkSwitch
             _Camera = camera;
             _OutlineMaterial = new Material(Shader.Find("BlinkSwitch/OutlineShader"));
             _DitheringMaterial = new Material(Shader.Find("BlinkSwitch/DitheringShader"));
+            _RenderCustomDepthNormalMaterial = new Material(Shader.Find("BlinkSwitch/CustomDepthNormalShader"));
             InitTextures();
+        }
+
+        public void Update()
+        {
+
         }
 
         public RenderTexture GeneratePostProcess(RenderTexture source)
@@ -20,6 +27,34 @@ namespace BlinkSwitch
             {
                 return source;
             }
+
+            if (_RenderCustomDepthNormalMaterial != null && _CustomDepthNormalTexture != null)
+            {
+                Graphics.Blit(Texture2D.blackTexture, _CustomDepthNormalTexture);
+                _RenderDepthNormlaCommandBuffer = new CommandBuffer();
+                _RenderDepthNormlaCommandBuffer.name = "Render Custom Depth Normal buffer";
+                _RenderDepthNormlaCommandBuffer.SetRenderTarget(_CustomDepthNormalTexture);
+                _RenderDepthNormlaCommandBuffer.ClearRenderTarget(true, true, Color.clear);
+                _RenderCustomDepthNormalMaterial.SetTexture(_CustomDepthNormalTextureId, _CustomDepthNormalTexture);
+                Plane[] planes = GeometryUtility.CalculateFrustumPlanes(_Camera);
+
+                foreach (Renderer r in GameObject.FindObjectsByType<Renderer>(sortMode: FindObjectsSortMode.None))
+                {
+                    if (GeometryUtility.TestPlanesAABB(planes, r.bounds))
+                    {
+                        var mf = r.GetComponent<MeshFilter>();
+                        if (r.gameObject != null && mf)
+                        {
+                            RenderCustomDepthNormalTexture(r.gameObject, mf);
+                        }
+                    }
+                }
+                _RenderDepthNormlaCommandBuffer.Dispose();
+                _RenderDepthNormlaCommandBuffer = null;
+            }
+
+            _OutlineMaterial.SetTexture(_CustomDepthNormalTextureId, _CustomDepthNormalTexture);
+
             //Creating outline texture
             Graphics.Blit(source, _OutlineTexture, _OutlineMaterial);
 
@@ -43,6 +78,7 @@ namespace BlinkSwitch
 
         public void Refresh()
         {
+
             InitTextures();
         }
         #endregion Public Methods
@@ -52,18 +88,25 @@ namespace BlinkSwitch
 
         private Camera _Camera;
 
+        //RenderBuffers
+        CommandBuffer _RenderDepthNormlaCommandBuffer;
+
         //Materials
         private Material _OutlineMaterial;
         private Material _DitheringMaterial;
+        private Material _RenderCustomDepthNormalMaterial;
 
         //Textures
         private RenderTexture _OutlineTexture;
         private RenderTexture _ResultTexture;
+        private RenderTexture _CustomDepthNormalTexture;
 
         //Outline shader
         private readonly int _OutlineDepthThresholdId = Shader.PropertyToID("_OutlineDepthThreshold");
         private readonly int _OutlineNormalThresholdId = Shader.PropertyToID("_OutlineNormalThreshold");
         private readonly int _OutlineSizeId = Shader.PropertyToID("_OutlineSize");
+        private readonly int _CustomDepthNormalTextureId = Shader.PropertyToID("_CustomDepthNormalTexture");
+        private readonly int _CustomViewProjectionMatrixId = Shader.PropertyToID("_CustomViewProjectionMatrix");
 
         //Dithering Shader
         private readonly int _OutlineTextureId = Shader.PropertyToID("_OutlineTexture");
@@ -78,8 +121,25 @@ namespace BlinkSwitch
             TextureUtilities.ReleaseTexture(_OutlineTexture);
             TextureUtilities.ReleaseTexture(_ResultTexture);
             _OutlineTexture =
-                TextureUtilities.CreateTextureClampPoint(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, _Camera.depth);
-            _ResultTexture = TextureUtilities.CreateTextureBilinearClamp(_Camera.pixelWidth, _Camera.pixelHeight, _Camera.depth);
+                TextureUtilities.CreateTextureClampPoint(_Settings.OutlineTextureSize, _Settings.OutlineTextureSize, 24, false);
+            _ResultTexture = TextureUtilities.CreateTextureBilinearClamp(_Camera.pixelWidth, _Camera.pixelHeight, 24, false);
+            _CustomDepthNormalTexture = new RenderTexture(_Camera.pixelWidth, _Camera.pixelHeight, 24, RenderTextureFormat.ARGBFloat)
+            {
+                enableRandomWrite = true,
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Point,
+                autoGenerateMips = false,
+                useMipMap = false
+            };
+
+        }
+
+        private void RenderCustomDepthNormalTexture(GameObject obj, MeshFilter meshFilter)
+        {
+            _RenderCustomDepthNormalMaterial.SetMatrix(_CustomViewProjectionMatrixId, GL.GetGPUProjectionMatrix(_Camera.projectionMatrix, true) * _Camera.worldToCameraMatrix);
+            _RenderDepthNormlaCommandBuffer.DrawMesh(meshFilter.sharedMesh, obj.transform.localToWorldMatrix, _RenderCustomDepthNormalMaterial);
+
+            Graphics.ExecuteCommandBuffer(_RenderDepthNormlaCommandBuffer);
         }
         #endregion Private Methods
     }

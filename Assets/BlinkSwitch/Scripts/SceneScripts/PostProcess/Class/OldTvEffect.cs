@@ -22,6 +22,12 @@ namespace BlinkSwitch
             Graphics.Blit(source, _ResultTexture, _OldTvMaterial);
             return _ResultTexture;
         }
+
+        public void Update()
+        {
+
+        }
+
         public void Setup()
         {
             _OldTvMaterial.SetFloat(_CurvatureId, _Settings.Curvature);
