@@ -42,16 +42,23 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
             }
 
             sampler2D _PreviousFrameTexture;
-            float4x4 _PreviousInverseVPMatrix;
+            float4x4 _PreviousViewProjectionMatrix;
 
             sampler2D _WorldPosFromDepthTexture;
+            sampler2D _MotionVectorTexture;
+
+            float2 _CurrentFrameJitter;
+            float2 _PreviousFrameJitter;
 
             float4 frag (v2f i) : SV_Target
             { 
                 float4 currentWorldPos = tex2D(_WorldPosFromDepthTexture, i.uv);
-                float4 clipPos = mul(_PreviousInverseVPMatrix, float4(currentWorldPos.xyz, 1.0f));
+                float4 velocity = tex2D(_MotionVectorTexture, i.uv);
+                float4 clipPos = mul(_PreviousViewProjectionMatrix, float4(currentWorldPos.xyz, 1.0f));
                 float4 ndc = clipPos / clipPos.w;
                 float2 previousScreenUv = ndc.xy * 0.5f + 0.5f;
+                previousScreenUv -= _PreviousFrameJitter;
+                previousScreenUv += _CurrentFrameJitter;
 
                 float3 minColor = 9999.0f;
                 float3 maxColor = -9999.0f;
@@ -68,11 +75,18 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
                 }
 
                 float3 currentColor = tex2D(_MainTex, i.uv).rgb;
-                float3 previousColor = clamp(tex2D(_PreviousFrameTexture, previousScreenUv).rgb, minColor, maxColor);
+                float3 previouColor = tex2D(_PreviousFrameTexture, previousScreenUv).rgb;
+                float3 previousColorClamped = clamp(previouColor, minColor, maxColor);
 
-                float4 col = float4(currentColor * 0.1f + 0.9f * previousColor, 1.0f);
+                float3 col = lerp(currentColor, previousColorClamped, 0.85f);
 
-                return col;
+                float velocityLength = length(velocity.rg);
+
+                float reject = saturate(velocityLength * 50.0f);
+
+                float3 result = lerp(currentColor, col, 1.0f - reject);
+
+                return float4(col, 1.0f);
             }
             ENDCG
         }

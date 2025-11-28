@@ -251,6 +251,7 @@ MonoBehaviour:
   _AntiAliasingType: 1
   _TemporaryAntiAliasingMaterial: {fileID: 2100000, guid: befde85de3fc0854f88b0ebca3930d8e, type: 2}
   _WorldPosFromDepthMaterial: {fileID: 2100000, guid: 679f337a5eb2679458a8eea36154f7be, type: 2}
+  _MotionVectorMaterial: {fileID: 2100000, guid: 0acfc0da08c8aa143aec938fe9603aca, type: 2}
   PlayerCamera: {fileID: 0}
   PlayerInput: {fileID: 0}
 --- !u!1 &2397453191144634746

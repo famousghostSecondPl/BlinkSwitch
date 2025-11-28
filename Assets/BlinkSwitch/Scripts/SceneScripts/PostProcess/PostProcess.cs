@@ -47,6 +47,7 @@ namespace BlinkSwitch
 
         [Header("G-Buffer")]
         [SerializeField] private Material _WorldPosFromDepthMaterial;
+        [SerializeField] private Material _MotionVectorMaterial;
         #endregion Inspector Variables
 
         #region Public Variables
@@ -79,10 +80,12 @@ namespace BlinkSwitch
             _EyeBlurResult = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
             _HorizontalBlurResultTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
             _DamageTextureResult = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth);
-            _PreviousFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.Default, false);
-            _CurrentFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.Default, false);
-            _TemporaryFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.Default, false);
+            _PreviousFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
+            _CurrentFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
+            _TemporaryFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
             _WorldPosFromDepthTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
+            _PreviousWorldPosFromDepthTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
+            _MotionVectorsTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
             _PostProcessIndex = _PostProcessIndex = Random.Range(0, _PostProcessCount * 100) / 100;
 
         }
@@ -101,11 +104,12 @@ namespace BlinkSwitch
         {
             if(_AntiAliasingType == AntiAliasingType.TAA)
             {
-                Vector2 currentJitterOffset = GenerateJitter(_FrameNumber);
+                _CurrentJitter = GenerateJitter(_FrameNumber) * 2.0f;
                 var projectionMatrix = PlayerCamera.projectionMatrix;
-                projectionMatrix.m02 += currentJitterOffset.x * 2.0f;
-                projectionMatrix.m12 += currentJitterOffset.y * 2.0f;
+                projectionMatrix.m02 += _CurrentJitter.x;
+                projectionMatrix.m12 += _CurrentJitter.y;
                 PlayerCamera.projectionMatrix = projectionMatrix;
+                _PreviousJitter = _CurrentJitter;
             }
         }
 
@@ -150,18 +154,26 @@ namespace BlinkSwitch
             {
                 Graphics.Blit(source, _CurrentFrameTexture, _BlinkMaterial);
             }
+            var previousProjViewMatrix = GL.GetGPUProjectionMatrix(_PreviousProjectionMatrix, false) * _PreviousViewMatrix;
+            _MotionVectorMaterial.SetTexture(_WorldPosTextureFromDepthId, _WorldPosFromDepthTexture);
+            _MotionVectorMaterial.SetTexture(_PreviousWorldPosFromDepthTextureId, _PreviousWorldPosFromDepthTexture);
+            _MotionVectorMaterial.SetMatrix(_PreviousViewProjectionMatrixId, previousProjViewMatrix);
+            _MotionVectorMaterial.SetMatrix(_CurrentViewProjectionMatrixId, GL.GetGPUProjectionMatrix(PlayerCamera.projectionMatrix, false) * PlayerCamera.worldToCameraMatrix);
+            _MotionVectorMaterial.SetVector(_CurrentFrameJitterId, _CurrentJitter);
+            _MotionVectorMaterial.SetVector(_PreviousFrameJitterId, _PreviousJitter);
+            Graphics.Blit(source, _MotionVectorsTexture, _MotionVectorMaterial);
             if (_AntiAliasingType == AntiAliasingType.TAA)
             {
-                _PreviousProjectionMatrix = PlayerCamera.projectionMatrix;
-                _PreviousViewMatrix = PlayerCamera.worldToCameraMatrix;
-                _TemporaryAntiAliasingMaterial.SetMatrix(_PreviousInverseVPMatrixId, GL.GetGPUProjectionMatrix(_PreviousProjectionMatrix, false) * _PreviousViewMatrix);
+                _TemporaryAntiAliasingMaterial.SetVector(_CurrentFrameJitterId, _CurrentJitter);
+                _TemporaryAntiAliasingMaterial.SetVector(_PreviousFrameJitterId, _PreviousJitter);
+                _TemporaryAntiAliasingMaterial.SetTexture(_MotionVectorTextureId, _MotionVectorsTexture);
+                _TemporaryAntiAliasingMaterial.SetMatrix(_PreviousViewProjectionMatrixId, previousProjViewMatrix);
                 _TemporaryAntiAliasingMaterial.SetTexture(_PreviousFrameTextureId, _PreviousFrameTexture);
                 _TemporaryAntiAliasingMaterial.SetTexture(_WorldPosTextureFromDepthId, _WorldPosFromDepthTexture);
                 Graphics.Blit(_CurrentFrameTexture, _TemporaryFrameTexture, _TemporaryAntiAliasingMaterial);
                 Graphics.Blit(_TemporaryFrameTexture, _PreviousFrameTexture);
                 Graphics.Blit(_TemporaryFrameTexture, destination);
-               // _PreviousProjectionMatrix = PlayerCamera.projectionMatrix;
-               // _PreviousViewMatrix = PlayerCamera.worldToCameraMatrix;
+                Graphics.Blit(source, _PreviousWorldPosFromDepthTexture, _WorldPosFromDepthMaterial);
             }
             else
             {
@@ -169,6 +181,8 @@ namespace BlinkSwitch
                 Graphics.Blit(_CurrentFrameTexture, destination);
             }
             _FrameNumber++;
+            _PreviousProjectionMatrix = PlayerCamera.projectionMatrix;
+            _PreviousViewMatrix = PlayerCamera.worldToCameraMatrix;
         }
         #endregion Unity Methhods
 
@@ -191,6 +205,8 @@ namespace BlinkSwitch
         private RenderTexture _CurrentFrameTexture;
         private RenderTexture _TemporaryFrameTexture;
         private RenderTexture _WorldPosFromDepthTexture;
+        private RenderTexture _PreviousWorldPosFromDepthTexture;
+        private RenderTexture _MotionVectorsTexture;
 
         private readonly int _PostProcessTextureId = Shader.PropertyToID("_PostProcessTexture");
 
@@ -202,11 +218,21 @@ namespace BlinkSwitch
         private readonly int _ScreenSpaceBloodTextureId = Shader.PropertyToID("_ScreenSpaceBloodTexture");
 
         //TAA
-        private readonly int _PreviousInverseVPMatrixId = Shader.PropertyToID("_PreviousInverseVPMatrix");
         private readonly int _PreviousFrameTextureId = Shader.PropertyToID("_PreviousFrameTexture");
         private readonly int _WorldPosTextureFromDepthId = Shader.PropertyToID("_WorldPosFromDepthTexture");
         private Matrix4x4 _PreviousProjectionMatrix;
         private Matrix4x4 _PreviousViewMatrix;
+
+        private Vector2 _CurrentJitter;
+        private Vector2 _PreviousJitter;
+
+        //G-Buffer
+        private readonly int _PreviousWorldPosFromDepthTextureId = Shader.PropertyToID("_PreviousWorldPositionFromDepth");
+        private readonly int _PreviousViewProjectionMatrixId = Shader.PropertyToID("_PreviousViewProjectionMatrix");
+        private readonly int _CurrentViewProjectionMatrixId = Shader.PropertyToID("_CurrentViewProjectionMatrix");
+        private readonly int _MotionVectorTextureId = Shader.PropertyToID("_MotionVectorsTexture");
+        private readonly int _CurrentFrameJitterId = Shader.PropertyToID("_CurrentFrameJitter");
+        private readonly int _PreviousFrameJitterId = Shader.PropertyToID("_PreviousFrameJitter");
 
         private int _FrameNumber;
 
