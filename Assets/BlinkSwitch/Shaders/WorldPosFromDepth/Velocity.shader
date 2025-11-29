@@ -43,9 +43,9 @@ Shader "BlinkSwitch/MotionVectors"
                 return o;
             }
 
-            float4x4 _CurrentViewProjectionMatrix;
-            float4x4 _PreviousViewProjectionMatrix;
 
+            float4x4 _PreviousViewProjectionMatrix;
+            
             float2 _CurrentFrameJitter;
             float2 _PreviousFrameJitter;
 
@@ -54,7 +54,7 @@ Shader "BlinkSwitch/MotionVectors"
                 float4 currentWorldPos = tex2D(_WorldPosFromDepthTexture, i.uv);
                 float4 previousWorldPos = tex2D(_PreviousWorldPositionFromDepth, i.uv);
 
-                float4 currentClipPos = mul(_CurrentViewProjectionMatrix, float4(currentWorldPos.xyz, 1.0f));
+                float4 currentClipPos = mul(UNITY_MATRIX_VP, float4(currentWorldPos.xyz, 1.0f));
                 float4 previousClipPos = mul(_PreviousViewProjectionMatrix, float4(previousWorldPos.xyz, 1.0f));
                 float4 currentClipPosForPreviousVP =  mul(_PreviousViewProjectionMatrix, float4(currentWorldPos.xyz, 1.0f));
 
@@ -62,16 +62,17 @@ Shader "BlinkSwitch/MotionVectors"
                 previousClipPos /= previousClipPos.w;
                 currentClipPosForPreviousVP /= currentClipPosForPreviousVP.w;
 
-                float2 currentNdc = currentClipPos.xy;
-                float2 previousNdc = previousClipPos.xy;
-                float2 currentNdcForPreviousVP = currentClipPosForPreviousVP.xy;
+                float2 currentUv = (currentClipPos.xy * 0.5f + 0.5f);
+                float2 previousUv = (previousClipPos.xy * 0.5f + 0.5f);
+                float2 currentUvForPreviousVP = (currentClipPosForPreviousVP.xy * 0.5f + 0.5f);
 
-                float2 velocity = previousNdc - currentNdc;
-                velocity *= 0.5 + 0.5f;
-                velocity -= _CurrentFrameJitter;
-                velocity -= _PreviousFrameJitter;
+                float2 screenSpaceVelocity = currentUvForPreviousVP - i.uv;
+                float2 worldSpaceVelocity = previousUv - currentUv;
 
-                float4 col = float4(velocity, currentNdcForPreviousVP);
+                worldSpaceVelocity -= _CurrentFrameJitter;
+                worldSpaceVelocity -= _PreviousFrameJitter;
+
+                float4 col = float4(worldSpaceVelocity, screenSpaceVelocity);
 
                 return col;
             }

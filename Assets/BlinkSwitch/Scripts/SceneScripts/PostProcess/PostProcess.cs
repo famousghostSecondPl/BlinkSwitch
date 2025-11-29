@@ -12,6 +12,12 @@ namespace BlinkSwitch
         SMAA = 2, // Supported only by Forward rendering
     }
 
+    public enum TAA_Version
+    {
+        SCREEN_SPACE_VELOCITY = 0,
+        WORLD_SPACE_VELOCITY = 1
+    }
+
     public sealed class PostProcess : MonoBehaviour
     {
         #region Inspector Variables
@@ -44,6 +50,7 @@ namespace BlinkSwitch
         [Header("Anti Aliasing")]
         [SerializeField] private AntiAliasingType _AntiAliasingType;
         [SerializeField] private Material _TemporaryAntiAliasingMaterial;
+        [SerializeField] private TAA_Version _TaaAlgorithmVersion;
 
         [Header("G-Buffer")]
         [SerializeField] private Material _WorldPosFromDepthMaterial;
@@ -85,7 +92,8 @@ namespace BlinkSwitch
             _TemporaryFrameTexture = TextureUtilities.CreateTextureBilinearClamp(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
             _WorldPosFromDepthTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
             _PreviousWorldPosFromDepthTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
-            _MotionVectorsTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
+            _VelocityTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
+            _PreviousVelocityTexture = TextureUtilities.CreateTextureClampPoint(PlayerCamera.pixelWidth, PlayerCamera.pixelHeight, PlayerCamera.depth, RenderTextureFormat.ARGBFloat, false);
             _PostProcessIndex = _PostProcessIndex = Random.Range(0, _PostProcessCount * 100) / 100;
 
         }
@@ -96,6 +104,28 @@ namespace BlinkSwitch
             if (PlayerInput.actions["Blink"].WasPressedThisFrame() && !_Blinking)
             {
                 StartCoroutine(Blink());
+            }
+            if (PlayerInput.actions["AliasingDebug"].WasPressedThisFrame())
+            {
+                if(_AntiAliasingType != AntiAliasingType.TAA)
+                {
+                    _AntiAliasingType = AntiAliasingType.TAA;
+                }
+                else
+                {
+                    _AntiAliasingType = AntiAliasingType.FXAA;
+                }
+            }
+            if (PlayerInput.actions["TaaVersionDebug"].WasPressedThisFrame())
+            {
+                if (_TaaAlgorithmVersion != TAA_Version.SCREEN_SPACE_VELOCITY)
+                {
+                    _TaaAlgorithmVersion = TAA_Version.SCREEN_SPACE_VELOCITY;
+                }
+                else
+                {
+                    _TaaAlgorithmVersion = TAA_Version.WORLD_SPACE_VELOCITY;
+                }
             }
 
         }
@@ -127,6 +157,15 @@ namespace BlinkSwitch
             }
             PlayerCamera.ResetProjectionMatrix();
             Graphics.Blit(source, _WorldPosFromDepthTexture, _WorldPosFromDepthMaterial);
+
+            var previousProjViewMatrix = GL.GetGPUProjectionMatrix(_PreviousProjectionMatrix, false) * _PreviousViewMatrix;
+            _MotionVectorMaterial.SetTexture(_WorldPosTextureFromDepthId, _WorldPosFromDepthTexture);
+            _MotionVectorMaterial.SetTexture(_PreviousWorldPosFromDepthTextureId, _PreviousWorldPosFromDepthTexture);
+            _MotionVectorMaterial.SetMatrix(_PreviousViewProjectionMatrixId, previousProjViewMatrix);
+            _MotionVectorMaterial.SetVector(_CurrentFrameJitterId, _CurrentJitter);
+            _MotionVectorMaterial.SetVector(_PreviousFrameJitterId, _PreviousJitter);
+            Graphics.Blit(source, _VelocityTexture, _MotionVectorMaterial);
+
             _DamageMaterial.SetFloat(_DamageIndicatorId, _PlayerStats.DamageIndicator);
             _DamageMaterial.SetTexture(_ScreenSpaceBloodTextureId, _ScreenSpaceBloodTexture);
             Graphics.Blit(source, _DamageTextureResult, _DamageMaterial);
@@ -154,26 +193,18 @@ namespace BlinkSwitch
             {
                 Graphics.Blit(source, _CurrentFrameTexture, _BlinkMaterial);
             }
-            var previousProjViewMatrix = GL.GetGPUProjectionMatrix(_PreviousProjectionMatrix, false) * _PreviousViewMatrix;
-            _MotionVectorMaterial.SetTexture(_WorldPosTextureFromDepthId, _WorldPosFromDepthTexture);
-            _MotionVectorMaterial.SetTexture(_PreviousWorldPosFromDepthTextureId, _PreviousWorldPosFromDepthTexture);
-            _MotionVectorMaterial.SetMatrix(_PreviousViewProjectionMatrixId, previousProjViewMatrix);
-            _MotionVectorMaterial.SetMatrix(_CurrentViewProjectionMatrixId, GL.GetGPUProjectionMatrix(PlayerCamera.projectionMatrix, false) * PlayerCamera.worldToCameraMatrix);
-            _MotionVectorMaterial.SetVector(_CurrentFrameJitterId, _CurrentJitter);
-            _MotionVectorMaterial.SetVector(_PreviousFrameJitterId, _PreviousJitter);
-            Graphics.Blit(source, _MotionVectorsTexture, _MotionVectorMaterial);
             if (_AntiAliasingType == AntiAliasingType.TAA)
             {
+                _TemporaryAntiAliasingMaterial.SetInt(_TaaVersionId, (int)_TaaAlgorithmVersion);
                 _TemporaryAntiAliasingMaterial.SetVector(_CurrentFrameJitterId, _CurrentJitter);
                 _TemporaryAntiAliasingMaterial.SetVector(_PreviousFrameJitterId, _PreviousJitter);
-                _TemporaryAntiAliasingMaterial.SetTexture(_MotionVectorTextureId, _MotionVectorsTexture);
+                _TemporaryAntiAliasingMaterial.SetTexture(_VelocityTextureId, _VelocityTexture);
+                _TemporaryAntiAliasingMaterial.SetTexture(_PreviousVelocityTextureId, _PreviousVelocityTexture);
                 _TemporaryAntiAliasingMaterial.SetMatrix(_PreviousViewProjectionMatrixId, previousProjViewMatrix);
                 _TemporaryAntiAliasingMaterial.SetTexture(_PreviousFrameTextureId, _PreviousFrameTexture);
-                _TemporaryAntiAliasingMaterial.SetTexture(_WorldPosTextureFromDepthId, _WorldPosFromDepthTexture);
                 Graphics.Blit(_CurrentFrameTexture, _TemporaryFrameTexture, _TemporaryAntiAliasingMaterial);
                 Graphics.Blit(_TemporaryFrameTexture, _PreviousFrameTexture);
                 Graphics.Blit(_TemporaryFrameTexture, destination);
-                Graphics.Blit(source, _PreviousWorldPosFromDepthTexture, _WorldPosFromDepthMaterial);
             }
             else
             {
@@ -183,6 +214,8 @@ namespace BlinkSwitch
             _FrameNumber++;
             _PreviousProjectionMatrix = PlayerCamera.projectionMatrix;
             _PreviousViewMatrix = PlayerCamera.worldToCameraMatrix;
+            Graphics.Blit(_WorldPosFromDepthTexture, _PreviousWorldPosFromDepthTexture);
+            Graphics.Blit(_VelocityTexture, _PreviousVelocityTexture);
         }
         #endregion Unity Methhods
 
@@ -206,7 +239,8 @@ namespace BlinkSwitch
         private RenderTexture _TemporaryFrameTexture;
         private RenderTexture _WorldPosFromDepthTexture;
         private RenderTexture _PreviousWorldPosFromDepthTexture;
-        private RenderTexture _MotionVectorsTexture;
+        private RenderTexture _VelocityTexture;
+        private RenderTexture _PreviousVelocityTexture;
 
         private readonly int _PostProcessTextureId = Shader.PropertyToID("_PostProcessTexture");
 
@@ -220,6 +254,7 @@ namespace BlinkSwitch
         //TAA
         private readonly int _PreviousFrameTextureId = Shader.PropertyToID("_PreviousFrameTexture");
         private readonly int _WorldPosTextureFromDepthId = Shader.PropertyToID("_WorldPosFromDepthTexture");
+        private readonly int _TaaVersionId = Shader.PropertyToID("_TaaVersion");
         private Matrix4x4 _PreviousProjectionMatrix;
         private Matrix4x4 _PreviousViewMatrix;
 
@@ -229,8 +264,8 @@ namespace BlinkSwitch
         //G-Buffer
         private readonly int _PreviousWorldPosFromDepthTextureId = Shader.PropertyToID("_PreviousWorldPositionFromDepth");
         private readonly int _PreviousViewProjectionMatrixId = Shader.PropertyToID("_PreviousViewProjectionMatrix");
-        private readonly int _CurrentViewProjectionMatrixId = Shader.PropertyToID("_CurrentViewProjectionMatrix");
-        private readonly int _MotionVectorTextureId = Shader.PropertyToID("_MotionVectorsTexture");
+        private readonly int _VelocityTextureId = Shader.PropertyToID("_VelocityTexture");
+        private readonly int _PreviousVelocityTextureId = Shader.PropertyToID("_PreviousVelocityTexture");
         private readonly int _CurrentFrameJitterId = Shader.PropertyToID("_CurrentFrameJitter");
         private readonly int _PreviousFrameJitterId = Shader.PropertyToID("_PreviousFrameJitter");
 
