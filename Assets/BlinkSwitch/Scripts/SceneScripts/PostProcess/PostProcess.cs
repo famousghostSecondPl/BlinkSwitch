@@ -202,6 +202,8 @@ namespace BlinkSwitch
                 _TemporaryAntiAliasingMaterial.SetTexture(_PreviousVelocityTextureId, _PreviousVelocityTexture);
                 _TemporaryAntiAliasingMaterial.SetMatrix(_PreviousViewProjectionMatrixId, previousProjViewMatrix);
                 _TemporaryAntiAliasingMaterial.SetTexture(_PreviousFrameTextureId, _PreviousFrameTexture);
+                _TemporaryAntiAliasingMaterial.SetTexture(_WorldPosTextureFromDepthId, _WorldPosFromDepthTexture);
+                _TemporaryAntiAliasingMaterial.SetTexture(_PreviousWorldPosFromDepthTextureId, _PreviousWorldPosFromDepthTexture);
                 Graphics.Blit(_CurrentFrameTexture, _TemporaryFrameTexture, _TemporaryAntiAliasingMaterial);
                 Graphics.Blit(_TemporaryFrameTexture, _PreviousFrameTexture);
                 Graphics.Blit(_TemporaryFrameTexture, destination);

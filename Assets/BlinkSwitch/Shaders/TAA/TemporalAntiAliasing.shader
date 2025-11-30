@@ -47,6 +47,9 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
             sampler2D _VelocityTexture;
             sampler2D _PreviousVelocityTexture;
 
+            sampler2D _WorldPosFromDepthTexture;
+            sampler2D _PreviousWorldPositionFromDepth;
+
             float2 _CurrentFrameJitter;
             float2 _PreviousFrameJitter;
 
@@ -87,34 +90,41 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
                 //With shimmering, but eliminated ghosting
                 if(_TaaVersion == 1)
                 {
-                    float2 previousScreenUv = i.uv - velocity.rg;
+                    float2 previousScreenUv = i.uv + velocity.ba;
                     float4 previousVelocity = tex2D(_PreviousVelocityTexture, previousScreenUv);
-                    float3 currentColorBlured = float3(0.0f, 0.0f, 0.0f);
+
+                    float currentDepth = tex2D(_WorldPosFromDepthTexture, i.uv);
+                    float previousDepth = tex2D(_PreviousWorldPositionFromDepth, previousScreenUv);
                     // Sample a 3x3 neighborhood to create a box in color space
                     for(int x = -1; x <= 1; ++x)
                     {
                         for(int y = -1; y <= 1; ++y)
                         {
                             float3 color = RGBtoYCoCg(tex2D(_MainTex, i.uv + (float2(x, y) / _ScreenParams.xy))); 
-                            minColor.yz = min(minColor.yz, color.yz);
-                            maxColor.yz = max(maxColor.yz, color.yz);
-                            currentColorBlured += color;
+                            minColor = min(minColor, color);
+                            maxColor = max(maxColor, color);
                         }
                     }
 
-                    currentColorBlured /= 9.0f;
-
                     float3 currentColor = RGBtoYCoCg(tex2D(_MainTex, i.uv).rgb);
                     float3 previouColor = RGBtoYCoCg(tex2D(_PreviousFrameTexture, previousScreenUv).rgb);
+
+                    float diff = abs(currentDepth - previousDepth);
+                    float relative = diff / max(currentDepth, previousDepth);
+                    if (relative > 0.003f)
+                    {
+                        previouColor = currentColor;
+                    }
+
                     float3 previousColorClamped = clamp(previouColor, minColor, maxColor);
 
                     float3 col = currentColor * 0.1f + previousColorClamped * 0.9f;
 
-                    float velocityLength = length(previousVelocity.rg - velocity.rg);
+                    float velocityLength = length(velocity.ba);
 
                     float reject = saturate((velocityLength - 0.01f) * 10.0f);
 
-                    float3 result = lerp(currentColorBlured, col, 1.0f - reject);
+                    float3 result = lerp(currentColor, col, 1.0f - reject);
 
                     return float4(YCoCgtoRGB(result), 1.0f);
                 }
@@ -135,17 +145,15 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
                         }
                     }
 
+                    float currentDepth = tex2D(_WorldPosFromDepthTexture, i.uv);
+                    float previousDepth = tex2D(_PreviousWorldPositionFromDepth, previousScreenUv);
+
                     float3 currentColor = tex2D(_MainTex, i.uv).rgb;
-                    float3 previouColor = tex2D(_PreviousFrameTexture, previousScreenUv).rgb;
-                    float3 previousColorClamped = clamp(previouColor, minColor, maxColor);
+                    float3 previousColor = tex2D(_PreviousFrameTexture, previousScreenUv).rgb;
 
-                    float velocityLength = length(previousVelocity.ba - velocity.ba);
-
-                    float reject = saturate((velocityLength - 0.01f) * 10.0f);
+                    float3 previousColorClamped = clamp(previousColor, minColor, maxColor);
 
                     float3 col = currentColor * 0.1f + previousColorClamped * 0.9f;
-
-                    float3 result = lerp(currentColor, col, 1.0f - reject);
 
                     return float4(col, 1.0f);
                 }

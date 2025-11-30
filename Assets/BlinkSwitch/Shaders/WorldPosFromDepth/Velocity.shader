@@ -66,13 +66,10 @@ Shader "BlinkSwitch/MotionVectors"
                 float2 previousUv = (previousClipPos.xy * 0.5f + 0.5f);
                 float2 currentUvForPreviousVP = (currentClipPosForPreviousVP.xy * 0.5f + 0.5f);
 
-                float2 screenSpaceVelocity = currentUvForPreviousVP - i.uv;
-                float2 worldSpaceVelocity = previousUv - currentUv;
+                float2 currPosWithPrevVPAndUv = currentUvForPreviousVP - i.uv;
+                float2 prevCurrVelocity = previousUv - currentUv;
 
-                worldSpaceVelocity -= _CurrentFrameJitter;
-                worldSpaceVelocity -= _PreviousFrameJitter;
-
-                float4 col = float4(worldSpaceVelocity, screenSpaceVelocity);
+                float4 col = float4(prevCurrVelocity, currPosWithPrevVPAndUv);
 
                 return col;
             }
