@@ -94,7 +94,7 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
                     float4 previousVelocity = tex2D(_PreviousVelocityTexture, previousScreenUv);
 
                     float currentDepth = tex2D(_WorldPosFromDepthTexture, i.uv);
-                    float previousDepth = tex2D(_PreviousWorldPositionFromDepth, previousScreenUv);
+                    float previousDepth = tex2D(_WorldPosFromDepthTexture, previousScreenUv);
                     // Sample a 3x3 neighborhood to create a box in color space
                     for(int x = -1; x <= 1; ++x)
                     {
