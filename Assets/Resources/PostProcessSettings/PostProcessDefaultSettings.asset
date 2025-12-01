@@ -18,5 +18,5 @@ MonoBehaviour:
   TaaJitterFactor: 2
   Upscale: 1
   HaltonSamples: 16
-  DepthThreshold: 0.003
+  DepthThreshold: 0.08
   VelocityFactor: 10
