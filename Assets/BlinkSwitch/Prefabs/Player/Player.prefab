@@ -214,6 +214,14 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: efa04589-b736-4c75-b562-f5a7457ee1d6
     m_ActionName: 'Player/Weapon3[/Keyboard/3,/DualSenseGamepadHID/dpad/left]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 574c43f8-91f2-4a1e-9268-da99a8866221
+    m_ActionName: 'Player/AliasingDebug[/Keyboard/t]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: b3af33f5-fb8c-4207-bdea-cf92c85c4cd3
+    m_ActionName: 'Player/TaaVersionDebug[/Keyboard/u]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -248,8 +256,7 @@ MonoBehaviour:
   _PlayerStats: {fileID: -7978651232791536300}
   _DamageMaterial: {fileID: 2100000, guid: 0e2f3462532e10349b75aab6835a74d9, type: 2}
   _ScreenSpaceBloodTexture: {fileID: 2800000, guid: e9c3fbd93ad644b42bfd7f23778f5c7c, type: 3}
-  _AntiAliasingType: 1
-  _TemporaryAntiAliasingMaterial: {fileID: 2100000, guid: befde85de3fc0854f88b0ebca3930d8e, type: 2}
+  _Settings: {fileID: 11400000, guid: cd57276b02630a947b397e03758ddadd, type: 2}
   _WorldPosFromDepthMaterial: {fileID: 2100000, guid: 679f337a5eb2679458a8eea36154f7be, type: 2}
   _MotionVectorMaterial: {fileID: 2100000, guid: 0acfc0da08c8aa143aec938fe9603aca, type: 2}
   PlayerCamera: {fileID: 0}

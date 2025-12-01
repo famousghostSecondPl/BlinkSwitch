@@ -77,6 +77,8 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
             }
 
             int _TaaVersion;
+            float _DepthThreshold;
+            float _VelocityFactor;
 
             float4 frag (v2f i) : SV_Target
             { 
@@ -94,7 +96,8 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
                     float4 previousVelocity = tex2D(_PreviousVelocityTexture, previousScreenUv);
 
                     float currentDepth = tex2D(_WorldPosFromDepthTexture, i.uv);
-                    float previousDepth = tex2D(_WorldPosFromDepthTexture, previousScreenUv);
+                    float previousDepth = tex2D(_PreviousWorldPositionFromDepth, previousScreenUv);
+
                     // Sample a 3x3 neighborhood to create a box in color space
                     for(int x = -1; x <= 1; ++x)
                     {
@@ -107,22 +110,22 @@ Shader "BlinkSwitch/TemporalAntiAliasing"
                     }
 
                     float3 currentColor = RGBtoYCoCg(tex2D(_MainTex, i.uv).rgb);
-                    float3 previouColor = RGBtoYCoCg(tex2D(_PreviousFrameTexture, previousScreenUv).rgb);
+                    float3 previousColor = RGBtoYCoCg(tex2D(_PreviousFrameTexture, previousScreenUv).rgb);
 
-                    float diff = abs(currentDepth - previousDepth);
-                    float relative = diff / max(currentDepth, previousDepth);
-                    if (relative > 0.003f)
-                    {
-                        previouColor = currentColor;
-                    }
-
-                    float3 previousColorClamped = clamp(previouColor, minColor, maxColor);
+                    float3 previousColorClamped = clamp(previousColor, minColor, maxColor);
 
                     float3 col = currentColor * 0.1f + previousColorClamped * 0.9f;
 
-                    float velocityLength = length(velocity.ba);
+                    float velocityLength = length(previousVelocity.ba - velocity.ba);
 
-                    float reject = saturate((velocityLength - 0.01f) * 10.0f);
+                    float reject = saturate(velocityLength * _VelocityFactor);
+                    
+                    float diff = abs(currentDepth - previousDepth);
+                    float relative = diff / max(currentDepth, previousDepth);
+                    if (relative > _DepthThreshold)
+                    {
+                        reject = 1.0f;
+                    }
 
                     float3 result = lerp(currentColor, col, 1.0f - reject);
 
