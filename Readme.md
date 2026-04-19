@@ -60,11 +60,11 @@ Demonstrates multi-player rendering and camera separation.
 
 ### Post-Processing Switching
 Shows runtime switching between different visual styles.
-[![Split-screen demo]](media/Blink-switch-effects.mp4)
+[![Switching effects demo]](media/Blink-switch-effects.mp4)
 
 ### Temporal Anti-Aliasing (TAA)
 Illustrates reduction of flickering and improved visual stability.
-[![Split-screen demo]](media/TAA.mp4)
+[![TAA demo]](media/TAA.mp4)
 
 ---
 
