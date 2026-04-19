@@ -56,15 +56,15 @@ A basic TAA solution was implemented to:
 
 ### Split-Screen Effect
 Demonstrates multi-player rendering and camera separation.
-[![Split-screen demo]](media/Blink-switch-split-screen.mp4)
+[![Split-screen demo]](Media/Blink-switch-split-screen.mp4)
 
 ### Post-Processing Switching
 Shows runtime switching between different visual styles.
-[![Switching effects demo]](media/Blink-switch-effects.mp4)
+[![Switching effects demo]](Media/Blink-switch-effects.mp4)
 
 ### Temporal Anti-Aliasing (TAA)
 Illustrates reduction of flickering and improved visual stability.
-[![TAA demo]](media/TAA.mp4)
+[![TAA demo]](Media/TAA.mp4)
 
 ---
 
